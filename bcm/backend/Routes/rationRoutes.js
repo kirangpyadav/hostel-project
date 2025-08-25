@@ -190,4 +190,67 @@ router.get('/history/:itemId', async (req, res) => {
 });
 
 
+
+
+
+
+// --- GET /api/rations/item-details/:id ---
+// Gets all details and the full transaction history for a specific item
+router.get('/item-details/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const item = await InventoryItem.findById(id);
+        if (!item) {
+            return res.status(404).json({ message: 'Inventory item not found.' });
+        }
+
+        const transactions = await RationTransaction.find({ item: id }).sort({ transactionDate: -1 });
+
+        res.status(200).json({ item, transactions });
+
+    } catch (error) {
+        console.error('Get Item Details Error:', error);
+        res.status(500).json({ message: 'Server error while fetching item details.' });
+    }
+});
+
+
+
+// --- GET /api/rations/history ---
+// Gets the full transaction history with optional filters
+router.get('/history', async (req, res) => {
+    try {
+        const { startDate, endDate, type, itemName } = req.query;
+
+        // Build the filter query object
+        let filter = {};
+        if (startDate && endDate) {
+            filter.transactionDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        }
+        if (type) {
+            filter.type = type; // 'IN' or 'OUT'
+        }
+
+        // Mongoose's .populate() is used to fetch the details (like name and unit) 
+        // from the linked InventoryItem collection.
+        let transactions = await RationTransaction.find(filter)
+            .populate('item', 'itemName unit') // This is the key part
+            .sort({ transactionDate: -1 });
+
+        // If an item name filter is applied, filter the results after populating
+        if (itemName) {
+            transactions = transactions.filter(t => 
+                t.item && t.item.itemName.toLowerCase().includes(itemName.toLowerCase())
+            );
+        }
+
+        res.status(200).json(transactions);
+
+    } catch (error) {
+        console.error('Get Full History Error:', error);
+        res.status(500).json({ message: 'Server error while fetching transaction history.' });
+    }
+});
+
 module.exports = router;

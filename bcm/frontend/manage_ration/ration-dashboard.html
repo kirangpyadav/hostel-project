@@ -24,7 +24,19 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             margin-bottom: 2rem;
+            position: relative;
         }
+     .back-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem; /* Made slightly larger for easier clicking */
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0; /* Remove default padding */
+    width: auto; /* Allow it to be its natural width */
+}
+.back-btn:hover { color: #000; }
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -53,88 +65,87 @@
         #addStockBtn { background-color: #28a745; color: white; }
         #viewHistoryBtn { background-color: #6c757d; color: white; }
         #viewTotalBtn { background-color: #17a2b8; color: white; }
-
         .search-bar {
             width: 100%;
             padding: 0.8rem 1.5rem;
             font-size: 1rem;
             border: 1px solid #ddd;
             border-radius: 8px;
+            box-sizing: border-box;
         }
-
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-        .item-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .item-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-        .item-image-container {
-            width: 100%;
-            height: 200px;
-            background-color: #f0f0f0;
-        }
-        .item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .item-info {
-            padding: 1rem;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .item-info h3 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.2rem;
-            color: #333;
-        }
-        .item-stock {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #28a745;
-            margin-top: 1rem;
-        }
+        .category-section { margin-bottom: 3rem; }
+        .category-title { font-size: 1.8rem; font-weight: 600; color: #333; margin-bottom: 1.5rem; border-bottom: 3px solid #007bff; padding-bottom: 0.5rem; }
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; }
+        .item-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; display: flex; flex-direction: column; }
+        .item-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .item-image-container { width: 100%; height: 200px; background-color: #f0f0f0; }
+        .item-image { width: 100%; height: 100%; object-fit: cover; }
+        .item-info { padding: 1rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .item-info h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; color: #333; }
+        .item-stock { font-size: 1.8rem; font-weight: 700; color: #28a745; margin-top: 1rem; }
         .item-stock.low { color: #dc3545; }
-        .item-stock .unit {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #666;
-        }
-        
-        /* Modal Styles */
+        .item-stock .unit { font-size: 1rem; font-weight: 500; color: #666; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
         .modal-content { background-color: #fefefe; margin: 10% auto; padding: 2rem; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 12px; position: relative; }
-        .close-btn { color: #aaa; position: absolute; top: 1rem; right: 1.5rem; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-        input, select, button { width: 100%; padding: 0.75rem; font-family: 'Poppins', sans-serif; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .message { text-align: center; padding: 1rem; border-radius: 5px; margin-top: 1rem; display: none; }
-        .message.success { background-color: #d4edda; color: #155724; }
-        .message.error { background-color: #f8d7da; color: #721c24; }
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .message {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: none;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .header h2 {
+    font-size: 2rem;
+    color: #333;
+    margin: 0;
+    flex-grow: 1; /* Allows the title to take up the middle space */
+    text-align: center;
+}
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
+            
             <div class="header-top">
-                <h2>Ration Dashboard</h2>
+                  <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+              
+                <h2 style="font-size: 50px;"    >Ration Dashboard</h2>
                 <div class="actions">
                     <button id="addNewItemBtn" class="action-btn">Add New Item Type</button>
                     <button id="addStockBtn" class="action-btn">Record Incoming Stock</button>
@@ -145,7 +156,9 @@
             <input type="text" id="searchBar" class="search-bar" placeholder="Search for a grocery item...">
         </div>
 
-        <div id="inventoryGrid" class="inventory-grid"></div>
+        <div id="dashboardContent">
+            <!-- Category sections will be inserted here -->
+        </div>
         <p id="loadingMessage">Loading inventory...</p>
     </div>
 
@@ -168,18 +181,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const inventoryGrid = document.getElementById('inventoryGrid');
+            const dashboardContent = document.getElementById('dashboardContent');
             const loadingMessage = document.getElementById('loadingMessage');
             const messageBox = document.getElementById('messageBox');
             const searchBar = document.getElementById('searchBar');
             
             const newItemModal = document.getElementById('newItemModal');
             const newItemForm = document.getElementById('newItemForm');
-
             const addNewItemBtn = document.getElementById('addNewItemBtn');
             const addStockBtn = document.getElementById('addStockBtn');
-            const viewTotalBtn = document.getElementById('viewTotalBtn');
             const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+            const viewTotalBtn = document.getElementById('viewTotalBtn');
 
             let allItems = [];
 
@@ -188,9 +200,9 @@
                 const closeBtns = document.querySelectorAll('.close-btn');
                 
                 addNewItemBtn.onclick = () => newItemModal.style.display = 'block';
-                addStockBtn.onclick = () => window.location.href = '/manage_ration/record-incoming-stock.html';
-                viewTotalBtn.onclick = () => window.location.href = '/manage_ration/total-grocery-report.html';
-                viewHistoryBtn.onclick = () => window.location.href = '/manage_ration/ration-history.html';
+                addStockBtn.onclick = () => window.location.href = 'record-incoming-stock.html';
+                viewHistoryBtn.onclick = () => window.location.href = 'ration-history.html';
+                viewTotalBtn.onclick = () => window.location.href = 'total-grocery-report.html';
                 
                 closeBtns.forEach(btn => btn.onclick = () => modals.forEach(m => m.style.display = 'none'));
                 window.onclick = (event) => {
@@ -199,25 +211,34 @@
             }
 
             function renderInventory(itemsToRender) {
-                inventoryGrid.innerHTML = '';
+                dashboardContent.innerHTML = '';
                 if (itemsToRender.length === 0) {
-                    inventoryGrid.innerHTML = '<p>No items match your search.</p>';
+                    dashboardContent.innerHTML = '<p>No items match your search.</p>';
                     return;
                 }
-                itemsToRender.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'item-card';
-                    card.dataset.itemId = item._id;
-                    const stockClass = item.currentStock <= 10 ? 'low' : '';
-                    const imageSrc = item.itemImage ? `/${item.itemImage}` : 'https://placehold.co/400x300/EFEFEF/AAAAAA&text=No+Image';
-                    card.innerHTML = `
-                        <div class="item-image-container"><img src="${imageSrc}" alt="${item.itemName}" class="item-image"></div>
-                        <div class="item-info">
-                            <h3>${item.itemName}</h3>
-                            <div class="item-stock ${stockClass}">${item.currentStock} <span class="unit">${item.unit}</span></div>
-                        </div>`;
-                    inventoryGrid.appendChild(card);
-                });
+                const itemsByCategory = itemsToRender.reduce((acc, item) => {
+                    const category = item.category || 'Uncategorized';
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(item);
+                    return acc;
+                }, {});
+
+                for (const category in itemsByCategory) {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    section.innerHTML = `<h2 class="category-title">${category}</h2><div class="inventory-grid"></div>`;
+                    const grid = section.querySelector('.inventory-grid');
+                    itemsByCategory[category].forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'item-card';
+                        card.dataset.itemId = item._id;
+                        const stockClass = item.currentStock <= 10 ? 'low' : '';
+                        const imageSrc = item.itemImage ? `/${item.itemImage}` : 'https://placehold.co/400x300/EFEFEF/AAAAAA&text=No+Image';
+                        card.innerHTML = `<div class="item-image-container"><img src="${imageSrc}" alt="${item.itemName}" class="item-image"></div><div class="item-info"><h3>${item.itemName}</h3><div class="item-stock ${stockClass}">${item.currentStock} <span class="unit">${item.unit}</span></div></div>`;
+                        grid.appendChild(card);
+                    });
+                    dashboardContent.appendChild(section);
+                }
             }
 
             async function fetchAndDisplayInventory() {
@@ -237,7 +258,8 @@
             searchBar.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const filteredItems = allItems.filter(item => 
-                    item.itemName.toLowerCase().includes(searchTerm)
+                    item.itemName.toLowerCase().includes(searchTerm) ||
+                    item.category.toLowerCase().includes(searchTerm)
                 );
                 renderInventory(filteredItems);
             });
@@ -258,12 +280,12 @@
                 }
             });
             
-            inventoryGrid.addEventListener('click', (e) => {
+            dashboardContent.addEventListener('click', (e) => {
                 const card = e.target.closest('.item-card');
                 if (card) {
                     const itemId = card.dataset.itemId;
                     localStorage.setItem('viewRationItemId', itemId);
-                    window.location.href = `/manage_ration/ration-item-details.html`;
+                    window.location.href = `ration-item-details.html`;
                 }
             });
 

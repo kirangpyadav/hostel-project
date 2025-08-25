@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Ration History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+          .history-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative; /* Needed for the back button */
+        }
+                .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.2s;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+        .back-btn:hover {
+            color: #000;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        .filter-group input, .filter-group select {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+        .summary-card.in { background-color: #28a745; }
+        .summary-card.out { background-color: #dc3545; }
+        .summary-card h4 { margin: 0 0 0.5rem 0; }
+        .summary-card p { margin: 0; font-size: 2rem; font-weight: 600; }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th, .history-table td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .history-table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        .type-in { color: #28a745; font-weight: bold; }
+        .type-out { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="history-container">
+            <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+            <h2>Full Transaction History</h2>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label for="typeFilter">Transaction Type</label>
+                    <select id="typeFilter">
+                        <option value="">All</option>
+                        <option value="IN">Incoming</option>
+                        <option value="OUT">Outgoing</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="itemSearch">Search by Item Name</label>
+                    <input type="text" id="itemSearch" placeholder="e.g., Rice">
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card in">
+                    <h4>Total Received</h4>
+                    <p id="totalIn">0</p>
+                </div>
+                <div class="summary-card out">
+                    <h4>Total Used</h4>
+                    <p id="totalOut">0</p>
+                </div>
+            </div>
+
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Item Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Source/Purpose</th>
+                        <th>Chief</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- History rows will be inserted here -->
+                </tbody>
+            </table>
+            <p id="loadingMessage">Loading history...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.getElementById('historyTableBody');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const totalInEl = document.getElementById('totalIn');
+            const totalOutEl = document.getElementById('totalOut');
+            
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const typeFilter = document.getElementById('typeFilter');
+            const itemSearch = document.getElementById('itemSearch');
+
+            let allTransactions = []; // Store the full list to avoid re-fetching
+
+            function renderTable(transactions) {
+                tableBody.innerHTML = '';
+                if (transactions.length === 0) {
+                    loadingMessage.textContent = 'No transactions found for the selected filters.';
+                    loadingMessage.style.display = 'block';
+                    return;
+                }
+                
+                loadingMessage.style.display = 'none';
+                transactions.forEach(t => {
+                    if (!t.item) return; // Skip transactions with missing item data
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(t.transactionDate).toLocaleString()}</td>
+                        <td>${t.item.itemName}</td>
+                        <td class="type-${t.type.toLowerCase()}">${t.type === 'IN' ? 'Incoming' : 'Outgoing'}</td>
+                        <td>${t.quantity} ${t.item.unit}</td>
+                        <td>${t.source || t.purpose}</td>
+                        <td>${t.chief || 'N/A'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function updateSummary(transactions) {
+                const totalIn = transactions.filter(t => t.type === 'IN').reduce((sum, t) => sum + t.quantity, 0);
+                const totalOut = transactions.filter(t => t.type === 'OUT').reduce((sum, t) => sum + t.quantity, 0);
+                totalInEl.textContent = totalIn.toFixed(2);
+                totalOutEl.textContent = totalOut.toFixed(2);
+            }
+            
+            function applyFilters() {
+                const startDate = startDateInput.value ? new Date(startDateInput.value).getTime() : 0;
+                const endDate = endDateInput.value ? new Date(endDateInput.value).setHours(23, 59, 59, 999) : Infinity;
+                const type = typeFilter.value;
+                const search = itemSearch.value.toLowerCase();
+
+                const filtered = allTransactions.filter(t => {
+                    const tDate = new Date(t.transactionDate).getTime();
+                    const typeMatch = !type || t.type === type;
+                    const dateMatch = tDate >= startDate && tDate <= endDate;
+                    const searchMatch = !search || (t.item && t.item.itemName.toLowerCase().includes(search));
+                    return typeMatch && dateMatch && searchMatch;
+                });
+                
+                renderTable(filtered);
+                updateSummary(filtered);
+            }
+
+            async function fetchHistory() {
+                try {
+                    const response = await fetch('/api/rations/history');
+                    if (!response.ok) throw new Error('Could not fetch transaction history.');
+                    allTransactions = await response.json();
+                    applyFilters(); // Initial render
+                } catch (error) {
+                    loadingMessage.textContent = error.message;
+                }
+            }
+
+            // Add event listeners to all filter controls
+            [startDateInput, endDateInput, typeFilter, itemSearch].forEach(el => {
+                el.addEventListener('change', applyFilters);
+            });
+            itemSearch.addEventListener('keyup', applyFilters); // For real-time search
+
+            fetchHistory();
+        });
+    </script>
+
+</body>
+</html>
