@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Grocery Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .report-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        h2 { text-align: center; margin-bottom: 2rem; color: #333; }
+        .actions { display: flex; justify-content: center; margin-bottom: 2rem; }
+        .ai-btn { padding: 0.8rem 2rem; border: none; border-radius: 25px; background-color: #6a11cb; color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .ai-btn:hover { background-color: #2575fc; }
+        .ai-summary { background-color: #f8f9fa; border-left: 4px solid #6a11cb; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; line-height: 1.7; }
+        
+        .low-stock-alert { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+        .low-stock-alert h3 { margin-top: 0; color: #d9534f; }
+        .low-stock-list { list-style: none; padding: 0; }
+        .low-stock-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #ffeeba; }
+        .purchase-btn { padding: 0.4rem 0.8rem; font-size: 0.9em; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .purchase-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* --- UPDATED: Purchase List Styles --- */
+        .purchase-list-container {
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .purchase-list-container h3 { margin-top: 0; }
+        .additional-item-form { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-top: 1rem; align-items: flex-end; }
+        .additional-item-form input, .additional-item-form select { width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 4px; border: 1px solid #ccc; }
+        .purchase-list-actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
+        
+        .purchase-list-actions button { padding: 0.6rem 1.2rem; border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: 500; }
+        #addAdditionalBtn {
+    width: auto; /* This makes the button only as wide as its text */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+        #downloadPdfBtn { background-color: #17a2b8; }
+        #clearListBtn { background-color: #dc3545; }
+
+        .charts-wrapper { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: center; margin-bottom: 3rem; }
+        .chart-container { width: 100%; }
+        .report-summary { border-top: 1px solid #eee; padding-top: 2rem; }
+        .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .summary-header h3 { color: #007bff; margin: 0; }
+        #resetFilterBtn { padding: 0.5rem 1rem; border: none; border-radius: 5px; background-color: #6c757d; color: white; font-weight: 500; cursor: pointer; display: none; }
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th, .report-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+        .report-table th { font-weight: 600; }
+        .low-stock { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="report-container">
+            <button class="back-btn" onclick="window.history.back()">←</button>
+            <h2>Total Grocery Stock Report</h2>
+
+            <div class="actions">
+                <button id="aiInsightsBtn" class="ai-btn">✨ Get AI Insights</button>
+            </div>
+            <div id="aiSummary" class="ai-summary" style="display: none;"></div>
+
+            <div id="lowStockAlert" class="low-stock-alert" style="display: none;">
+                <h3>⚠️ Urgent Attention: Low Stock Items</h3>
+                <ul id="lowStockList" class="low-stock-list"></ul>
+            </div>
+
+            <div id="purchaseListContainer" class="purchase-list-container" style="display: none;">
+                <h3>🛒 Purchase List</h3>
+                <ul id="purchaseList" class="low-stock-list" style="border:none;"></ul>
+                <div class="additional-item-form">
+                    <div>
+                        <label for="additionalItemSelect">Select Item to Add</label>
+                        <select id="additionalItemSelect"></select>
+                    </div>
+                     <div>
+                        <label for="additionalItemQuantity">Quantity</label>
+                        <input type="number" id="additionalItemQuantity" placeholder="e.g., 10">
+                    </div>
+                    <button id="addAdditionalBtn" class="purchase-btn">Add</button>
+                </div>
+                <div class="purchase-list-actions">
+                    <button id="downloadPdfBtn">Download as PDF</button>
+                    <button id="clearListBtn">Clear List</button>
+                </div>
+            </div>
+
+            <div class="charts-wrapper">
+                <div class="chart-container"><canvas id="stockBarChart"></canvas></div>
+                <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+            </div>
+
+            <div class="report-summary">
+                <div class="summary-header">
+                    <h3 id="tableTitle">All Inventory Details</h3>
+                    <button id="resetFilterBtn">Show All Items</button>
+                </div>
+                <table class="report-table" id="reportTable">
+                    <thead><tr><th>Item Name</th><th>Category</th><th>Current Stock</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const lowStockAlert = document.getElementById('lowStockAlert');
+            const lowStockList = document.getElementById('lowStockList');
+            const purchaseListContainer = document.getElementById('purchaseListContainer');
+            const purchaseList = document.getElementById('purchaseList');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            const clearListBtn = document.getElementById('clearListBtn');
+            const additionalItemSelect = document.getElementById('additionalItemSelect');
+            const additionalItemQuantity = document.getElementById('additionalItemQuantity');
+            const addAdditionalBtn = document.getElementById('addAdditionalBtn');
+            
+            let allItems = [];
+            let purchaseItems = [];
+
+            // --- Purchase List Functionality ---
+            function renderPurchaseList() {
+                if (purchaseItems.length > 0) {
+                    purchaseList.innerHTML = '';
+                    purchaseItems.forEach(item => {
+                        const li = document.createElement('li');
+                        // Display quantity if it exists
+                        const quantityText = item.quantity ? ` - ${item.quantity} ${item.unit}` : '';
+                        li.textContent = `${item.itemName}${quantityText}`;
+                        purchaseList.appendChild(li);
+                    });
+                    purchaseListContainer.style.display = 'block';
+                } else {
+                    purchaseListContainer.style.display = 'none';
+                }
+            }
+
+            lowStockList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('purchase-btn')) {
+                    const itemName = e.target.dataset.itemName;
+                    const item = allItems.find(i => i.itemName === itemName);
+                    if (item && !purchaseItems.find(p => p.itemName === itemName)) {
+                        purchaseItems.push(item);
+                        renderPurchaseList();
+                        e.target.textContent = 'Added ✓';
+                        e.target.disabled = true;
+                    }
+                }
+            });
+
+            addAdditionalBtn.addEventListener('click', () => {
+                const itemId = additionalItemSelect.value;
+                const quantity = additionalItemQuantity.value;
+                if (!itemId || !quantity) {
+                    alert('Please select an item and enter a quantity.');
+                    return;
+                }
+                const selectedItem = allItems.find(i => i._id === itemId);
+                if (selectedItem && !purchaseItems.find(p => p.itemName === selectedItem.itemName)) {
+                    purchaseItems.push({ ...selectedItem, quantity: Number(quantity) });
+                    renderPurchaseList();
+                    additionalItemSelect.value = '';
+                    additionalItemQuantity.value = '';
+                } else if (purchaseItems.find(p => p.itemName === selectedItem.itemName)) {
+                    alert('This item is already in the purchase list.');
+                }
+            });
+
+            downloadPdfBtn.addEventListener('click', () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const date = new Date().toLocaleDateString();
+
+                doc.setFontSize(20);
+                doc.text("Grocery Purchase List", 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Date: ${date}`, 20, 30);
+                doc.line(20, 35, 190, 35);
+
+                let y = 45;
+                doc.setFont('helvetica', 'bold');
+                doc.text("Item to Purchase", 20, y);
+                doc.text("Quantity", 150, y);
+                y += 10;
+                doc.setFont('helvetica', 'normal');
+
+                purchaseItems.forEach(item => {
+                    if (y > 280) { doc.addPage(); y = 20; }
+                    doc.text(`- ${item.itemName}`, 25, y);
+                    doc.text(item.quantity ? `${item.quantity} ${item.unit}` : 'As required', 150, y);
+                    y += 8;
+                });
+
+                doc.save(`Purchase_List_${new Date().toISOString().split('T')[0]}.pdf`);
+            });
+
+            clearListBtn.addEventListener('click', () => {
+                purchaseItems = [];
+                renderPurchaseList();
+                document.querySelectorAll('.purchase-btn').forEach(btn => {
+                    btn.textContent = 'Add to Purchase List';
+                    btn.disabled = false;
+                });
+            });
+
+            // --- AI, Chart, and Table Rendering ---
+            const aiInsightsBtn = document.getElementById('aiInsightsBtn');
+            const aiSummaryDiv = document.getElementById('aiSummary');
+            const chartCanvas = document.getElementById('categoryChart');
+            const stockBarChartCanvas = document.getElementById('stockBarChart');
+            const reportTableBody = document.querySelector('#reportTable tbody');
+            const tableTitle = document.getElementById('tableTitle');
+            const resetFilterBtn = document.getElementById('resetFilterBtn');
+            let categoryChart = null;
+
+            async function initializePage() {
+                try {
+                    const response = await fetch('/api/rations/inventory');
+                    if (!response.ok) throw new Error('Could not fetch inventory data.');
+                    allItems = await response.json();
+                    
+                    // Populate the additional item dropdown
+                    additionalItemSelect.innerHTML = '<option value="">-- Search and select an item --</option>';
+                    allItems.sort((a, b) => a.itemName.localeCompare(b.itemName)).forEach(item => {
+                        additionalItemSelect.innerHTML += `<option value="${item._id}">${item.itemName}</option>`;
+                    });
+
+                    if (allItems.length === 0) {
+                        document.querySelector('.report-container').innerHTML = '<h2>No inventory data to display.</h2>';
+                        return;
+                    }
+
+                    renderTable(allItems);
+                    displayLowStockAlerts(allItems);
+
+                    const itemLabels = allItems.map(item => item.itemName);
+                    const itemData = allItems.map(item => item.currentStock);
+                    const itemBGColors = allItems.map(item => item.currentStock <= 10 ? 'rgba(220, 53, 69, 0.6)' : 'rgba(40, 167, 69, 0.6)');
+                    const itemBorderColors = allItems.map(item => item.currentStock <= 10 ? 'rgba(220, 53, 69, 1)' : 'rgba(40, 167, 69, 1)');
+                    new Chart(stockBarChartCanvas, { type: 'bar', data: { labels: itemLabels, datasets: [{ label: 'Current Stock', data: itemData, backgroundColor: itemBGColors, borderColor: itemBorderColors, borderWidth: 1 }] }, options: { indexAxis: 'y', scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false }, title: { display: true, text: 'Stock Levels per Item', font: { size: 18 } } } } });
+
+                    const categoryTotals = allItems.reduce((acc, item) => { acc[item.category] = (acc[item.category] || 0) + item.currentStock; return acc; }, {});
+                    const categoryLabels = Object.keys(categoryTotals);
+                    const categoryData = Object.values(categoryTotals);
+                    categoryChart = new Chart(chartCanvas, { type: 'doughnut', data: { labels: categoryLabels, datasets: [{ data: categoryData, backgroundColor: ['rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'], borderColor: '#fff', borderWidth: 2 }] }, options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Stock by Category', font: { size: 18 } } }, onClick: (event, elements) => { if (elements.length > 0) { const clickedIndex = elements[0].index; const clickedCategory = categoryChart.data.labels[clickedIndex]; filterData(clickedCategory); } } } });
+
+                } catch (error) {
+                    console.error('Report Generation Error:', error);
+                    document.querySelector('.report-container').innerHTML = '<h2>Could not load report data.</h2>';
+                }
+            }
+            
+            // --- Paste unchanged functions back in ---
+            aiInsightsBtn.addEventListener('click', async () => { if (allItems.length === 0) { alert('No inventory data to analyze.'); return; } aiInsightsBtn.textContent = '✨ Thinking...'; aiInsightsBtn.disabled = true; aiSummaryDiv.style.display = 'none'; try { let prompt = "You are an inventory manager for a hostel. Based on the following stock data (Item Name, Category, Current Stock, Unit), provide a brief, professional summary of our inventory status. Identify which categories are well-stocked and which are critically low (less than 10 units). Finally, suggest a priority list for the next grocery purchase.\n\nDATA:\n"; allItems.forEach(item => { prompt += `- ${item.itemName} (${item.category}): ${item.currentStock} ${item.unit}\n`; }); const apiKey = "AIzaSyDo_fxYFf708apQO7NHLMQ_xhQiZIn5k4k"; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`; const payload = { contents: [{ parts: [{ text: prompt }] }] }; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) throw new Error('Failed to get a response from the AI.'); const result = await response.json(); const summaryText = result.candidates[0].content.parts[0].text; aiSummaryDiv.innerHTML = summaryText.replace(/\n/g, '<br>'); aiSummaryDiv.style.display = 'block'; } catch (error) { console.error("AI Insights Error:", error); alert("Could not generate AI insights. Please check your API key and try again."); } finally { aiInsightsBtn.textContent = '✨ Get AI Insights'; aiInsightsBtn.disabled = false; } });
+            function renderTable(itemsToDisplay) { reportTableBody.innerHTML = ''; itemsToDisplay.forEach(item => { const row = document.createElement('tr'); const stockClass = item.currentStock <= 10 ? 'low-stock' : ''; row.innerHTML = `<td>${item.itemName}</td><td>${item.category}</td><td class="${stockClass}">${item.currentStock} ${item.unit}</td>`; reportTableBody.appendChild(row); }); }
+            function displayLowStockAlerts(items) { const lowStockItems = items.filter(item => item.currentStock <= 10); if (lowStockItems.length > 0) { lowStockList.innerHTML = ''; lowStockItems.forEach(item => { const li = document.createElement('li'); li.innerHTML = `<span><strong>${item.itemName}</strong> - only ${item.currentStock} ${item.unit} left</span><button class="purchase-btn" data-item-name="${item.itemName}">Add to Purchase List</button>`; lowStockList.appendChild(li); }); lowStockAlert.style.display = 'block'; } else { lowStockAlert.style.display = 'none'; } }
+            function filterData(category) { const filteredItems = allItems.filter(item => item.category === category); renderTable(filteredItems); tableTitle.textContent = `Details for: ${category}`; resetFilterBtn.style.display = 'inline-block'; }
+            resetFilterBtn.addEventListener('click', () => { renderTable(allItems); tableTitle.textContent = 'All Inventory Details'; resetFilterBtn.style.display = 'none'; });
+            
+            initializePage();
+        });
+    </script>
+
+</body>
+</html>
