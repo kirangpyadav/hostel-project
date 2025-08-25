@@ -96,6 +96,57 @@ router.post('/transaction/in', async (req, res) => {
     }
 });
 
+
+
+
+
+
+// --- POST /api/rations/transaction/in/bulk ---
+// Records multiple incoming stock transactions at once
+router.post('/transaction/in/bulk', async (req, res) => {
+    try {
+        const { items, source } = req.body;
+        if (!items || !Array.isArray(items) || items.length === 0 || !source) {
+            return res.status(400).json({ message: 'A list of items and a source are required.' });
+        }
+
+        const transactionPromises = [];
+        const updatePromises = [];
+
+        for (const incomingItem of items) {
+            // Create a transaction record for each item
+            const transaction = new RationTransaction({
+                item: incomingItem.itemId,
+                type: 'IN',
+                quantity: incomingItem.quantity,
+                source
+            });
+            transactionPromises.push(transaction.save());
+
+            // Prepare the stock update for each item
+            updatePromises.push(
+                InventoryItem.updateOne(
+                    { _id: incomingItem.itemId },
+                    { $inc: { currentStock: Number(incomingItem.quantity) } }
+                )
+            );
+        }
+
+        // Execute all database operations
+        await Promise.all(transactionPromises);
+        await Promise.all(updatePromises);
+
+        res.status(200).json({ message: 'Stock added successfully for all items.' });
+
+    } catch (error) {
+        console.error('Bulk Incoming Transaction Error:', error);
+        res.status(500).json({ message: 'Server error during bulk stock addition.' });
+    }
+});
+
+
+
+
 // --- POST /api/rations/transaction/out ---
 router.post('/transaction/out', async (req, res) => {
     try {
