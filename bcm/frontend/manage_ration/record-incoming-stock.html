@@ -11,7 +11,7 @@
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; margin: 0; padding: 2rem; }
         .container { max-width: 900px; margin: 0 auto; }
-        .form-container, .success-container { background: #fff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .form-container, .success-container { background: #fff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; }
         h2 { text-align: center; margin-bottom: 2rem; color: #333; }
         .form-grid { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 1rem; align-items: flex-end; }
         .form-group { margin-bottom: 1.25rem; }
@@ -25,12 +25,31 @@
         #itemList li { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background-color: #f8f9fa; border-radius: 4px; margin-bottom: 0.5rem; }
         .remove-btn { background-color: #dc3545; color: white; border-radius: 50%; width: 30px; height: 30px; padding: 0; line-height: 30px; text-align: center; }
         .success-container { text-align: center; display: none; }
+        /* --- Back Button Style --- */
+.back-btn {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0.5rem;
+    line-height: 1;
+    width: auto; /* Makes button fit content */
+}
+.back-btn:hover {
+    color: #000;
+}
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="form-container" id="formContainer">
+            <button class="back-btn" onclick="window.history.back()">&#8592;</button>
             <h2>Record Incoming Stock</h2>
             <div class="form-group">
                 <label for="source">Source of Supply</label>

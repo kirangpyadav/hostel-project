@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .details-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ADD THIS ENTIRE NEW BLOCK */
+.back-btn {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+}
+.back-btn:hover {
+    color: #333;
+}
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 2rem;
+        }
+        .item-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        .item-title h2 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #333;
+        }
+        .item-title p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+        .item-title p.low { color: #dc3545; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        .metric-card p {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 0.5rem;
+        }
+        .ai-actions { display: flex; justify-content: center; margin-bottom: 1rem; }
+        .ai-btn { padding: 0.8rem 2rem; border: none; border-radius: 25px; background-color: #6a11cb; color: white; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .ai-btn:hover { background-color: #2575fc; }
+        .ai-summary { background-color: #f8f9fa; border-left: 4px solid #6a11cb; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; line-height: 1.7; }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .history-table th, .history-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .history-table th { font-weight: 600; }
+        .type-in { color: #28a745; font-weight: bold; }
+        .type-out { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="detailsContainer" class="details-container" style="display:none;">
+            <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+            <div class="item-header">
+                <img id="itemImage" src="" alt="Item Photo" class="item-image">
+                <div class="item-title">
+                    <h2 id="itemName"></h2>
+                    <p id="itemStock"></p>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card"><h4 >Total Incoming</h4><p id="totalIn"></p></div>
+                <div class="metric-card"><h4 >Total Outgoing</h4><p id="totalOut"></p></div>
+                <div class="metric-card"><h4>Total Remaining</h4><p id="totalRemaining"></p></div>
+                <div class="metric-card"><h4 >Avg. Daily Usage</h4><p id="avgUsage"></p></div>
+            </div>
+
+            <div class="section-title">Consumption Analysis</div>
+            <div class="ai-actions">
+                <button id="aiInsightsBtn" class="ai-btn">✨ Get AI Analysis</button>
+            </div>
+            <div id="aiSummary" class="ai-summary" style="display: none;"></div>
+
+            <div class="section-title">Stock History (Last 30 Days)</div>
+            <canvas id="consumptionChart"></canvas>
+
+            <div class="section-title">Full Transaction History</div>
+            <table class="history-table">
+                <thead><tr><th>Date</th><th>Type</th><th>Quantity</th><th>Source/Purpose</th><th>Chief</th></tr></thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+        <p id="loadingMessage">Loading item details...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const itemId = localStorage.getItem('viewRationItemId');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const detailsContainer = document.getElementById('detailsContainer');
+
+            if (!itemId) {
+                loadingMessage.textContent = 'Error: No item selected.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/rations/item-details/${itemId}`);
+                if (!response.ok) throw new Error('Could not fetch item details.');
+                const { item, transactions } = await response.json();
+
+                // --- 1. Populate Header ---
+                document.getElementById('itemName').textContent = item.itemName;
+                const stockEl = document.getElementById('itemStock');
+                stockEl.textContent = `${item.currentStock} ${item.unit}`;
+                if (item.currentStock <= 10) stockEl.classList.add('low');
+                document.getElementById('itemImage').src = item.itemImage ? `/${item.itemImage}` : 'https://placehold.co/150x150/EFEFEF/AAAAAA&text=No+Image';
+
+                // --- 2. Calculate and Populate Metrics ---
+                const totalIn = transactions.filter(t => t.type === 'IN').reduce((sum, t) => sum + t.quantity, 0);
+                const totalOut = transactions.filter(t => t.type === 'OUT').reduce((sum, t) => sum + t.quantity, 0);
+                
+                const firstDate = transactions.length ? new Date(transactions[transactions.length - 1].transactionDate) : new Date();
+                const daysElapsed = Math.max(1, (new Date() - firstDate) / (1000 * 60 * 60 * 24));
+                const avgUsage = (totalOut / daysElapsed).toFixed(2);
+
+                document.getElementById('totalIn').textContent = `${totalIn} ${item.unit}`;
+                document.getElementById('totalOut').textContent = `${totalOut} ${item.unit}`;
+                document.getElementById('totalRemaining').textContent = `${item.currentStock} ${item.unit}`;
+                document.getElementById('avgUsage').textContent = `${avgUsage} ${item.unit}/day`;
+
+                // --- 3. Populate Transaction History Table ---
+                const historyTableBody = document.getElementById('historyTableBody');
+                transactions.forEach(t => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(t.transactionDate).toLocaleString()}</td>
+                        <td class="type-${t.type.toLowerCase()}">${t.type}</td>
+                        <td>${t.quantity} ${item.unit}</td>
+                        <td>${t.source || t.purpose}</td>
+                        <td>${t.chief || 'N/A'}</td>
+                    `;
+                    historyTableBody.appendChild(row);
+                });
+
+                // --- 4. Prepare Data and Render Chart ---
+                const last30Days = new Date();
+                last30Days.setDate(last30Days.getDate() - 30);
+                let stockLevel = item.currentStock;
+                const chartData = [];
+                const chartLabels = [];
+
+                // Reconstruct stock levels backwards in time
+                for (let i = 0; i < transactions.length; i++) {
+                    const t = transactions[i];
+                    if (new Date(t.transactionDate) < last30Days) break;
+                    chartData.unshift(stockLevel);
+                    chartLabels.unshift(new Date(t.transactionDate).toLocaleDateString());
+                    if (t.type === 'IN') stockLevel -= t.quantity;
+                    else stockLevel += t.quantity;
+                }
+
+                new Chart(document.getElementById('consumptionChart'), {
+                    type: 'line',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            label: 'Stock Level',
+                            data: chartData,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+
+                // --- 5. Setup AI Insights Button ---
+                // --- 5. Setup AI Insights Button ---
+document.getElementById('aiInsightsBtn').addEventListener('click', async () => {
+    const aiInsightsBtn = document.getElementById('aiInsightsBtn');
+    const aiSummaryDiv = document.getElementById('aiSummary');
+
+    aiInsightsBtn.textContent = '✨ Thinking...';
+    aiInsightsBtn.disabled = true;
+    aiSummaryDiv.style.display = 'none';
+
+    try {
+        // 1. Create a detailed prompt for the AI
+        let prompt = `You are an inventory analyst for a hostel. Based on the following transaction history for "${item.itemName}", provide a professional analysis. The current stock is ${item.currentStock} ${item.unit}. First, calculate the average daily consumption rate. Second, predict how many days of stock are remaining. Third, recommend a specific date for the next purchase. Present this in a clear, brief report.\n\nTransaction History:\n`;
+        transactions.forEach(t => {
+            const date = new Date(t.transactionDate).toLocaleDateString();
+            const type = t.type === 'IN' ? 'Received' : 'Used';
+            prompt += `- On ${date}, ${t.quantity} ${item.unit} were ${type} for ${t.source || t.purpose}.\n`;
+        });
+
+        // 2. Call the Gemini API
+        const apiKey = "AIzaSyDo_fxYFf708apQO7NHLMQ_xhQiZIn5k4k"; // IMPORTANT: Replace with your actual API key
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+        const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Failed to get a response from the AI.');
+
+        const result = await response.json();
+        const summaryText = result.candidates[0].content.parts[0].text;
+
+        // 3. Display the result
+        aiSummaryDiv.innerHTML = summaryText.replace(/\n/g, '<br>'); // Format for HTML
+        aiSummaryDiv.style.display = 'block';
+
+    } catch (error) {
+        console.error("AI Insights Error:", error);
+        alert("Could not generate AI insights. Please check your API key and try again.");
+    } finally {
+        aiInsightsBtn.textContent = '✨ Get AI Analysis';
+        aiInsightsBtn.disabled = false;
+    }
+});
+
+                loadingMessage.style.display = 'none';
+                detailsContainer.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                loadingMessage.textContent = 'Could not load item details.';
+            }
+        });
+    </script>
+
+</body>
+</html>
