@@ -1,0 +1,506 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BCM Hostel</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Body Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6; /* Fallback background */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Section */
+        .admin-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Vertically align items */
+            justify-content: center; /* Center content horizontally */
+            padding-left: 100px; /* Space for the logo */
+            padding-right: 100px; /* Space for the logout button */
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .admin-header p {
+            margin: 5px 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .admin-profile-logo {
+            position: absolute;
+            left: 120px; /* Position to the left */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 70px; /* Adjust size as needed */
+            height: 70px; /* Adjust size as needed */
+            border-radius: 50%;
+            border: 3px solid #f39c12; /* A warm border color */
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+
+        .logout-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            position: absolute;
+            right: 120px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Dashboard Content Layout */
+        .dashboard-content {
+            flex-grow: 1;
+            padding: 30px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for cards */
+            gap: 30px;
+            max-width: 1200px; /* Max width for the dashboard content */
+            width: 100%;
+            margin: 30px auto; /* Center the grid below the header */
+            align-items: start; /* Align cards to the top of their grid cells */
+            background-image: url('admin-bg.jpg'); /* Background image for admin dashboard */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+
+        .dashboard-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+            z-index: -1;
+        }
+
+        /* Attractive Card Styling */
+        .dashboard-card {
+            background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px; /* Minimum height for cards */
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #007bff; /* Default icon color, will be overridden by specific classes */
+            transition: transform 0.3s ease;
+            text-align: center; /* Center the icon */
+        }
+
+        .dashboard-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .dashboard-card h3 {
+            font-size: 1.6em;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 123, 255, 0.3); /* Light blue accent */
+            padding-bottom: 10px;
+            text-align: center;
+            display: inline-block; /* To make border-bottom only cover the text */
+            width: fit-content; /* Adjust width to content */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .dashboard-card p {
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .dashboard-card .card-button {
+            display: inline-block;
+            background-color: #28a745; /* Green for action */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+            align-self: center; /* Center button horizontally within the flex container */
+            border: none; /* Ensure no default button border */
+            cursor: pointer;
+        }
+
+        .dashboard-card .card-button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Specific card color themes and icons */
+        .dashboard-card.students .card-icon,
+        .dashboard-card.students h3 { color: #007bff; }
+        .dashboard-card.students h3 { border-color: #007bff; }
+        .dashboard-card.students .card-button { background-color: #007bff; }
+        .dashboard-card.students .card-button:hover { background-color: #0056b3; }
+
+        .dashboard-card.cooks .card-icon,
+        .dashboard-card.cooks h3 { color: #ffc107; }
+        .dashboard-card.cooks h3 { border-color: #ffc107; }
+        .dashboard-card.cooks .card-button { background-color: #ffc107; color: #333; }
+        .dashboard-card.cooks .card-button:hover { background-color: #e0a800; }
+
+        .dashboard-card.rations .card-icon,
+        .dashboard-card.rations h3 { color: #17a2b8; }
+        .dashboard-card.rations h3 { border-color: #17a2b8; }
+        .dashboard-card.rations .card-button { background-color: #17a2b8; }
+        .dashboard-card.rations .card-button:hover { background-color: #138496; }
+
+        .dashboard-card.announcements .card-icon,
+        .dashboard-card.announcements h3 { color: #6f42c1; }
+        .dashboard-card.announcements h3 { border-color: #6f42c1; }
+        .dashboard-card.announcements .card-button { background-color: #6f42c1; }
+        .dashboard-card.announcements .card-button:hover { background-color: #563d7c; }
+
+        /* Decorative background elements for cards */
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            top: -20px;
+            right: -20px;
+            z-index: 0;
+            transition: all 0.5s ease;
+        }
+
+        .dashboard-card::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(0,123,255,0.1) 0%, rgba(0,123,255,0) 70%);
+            border-radius: 50%;
+            bottom: -20px;
+            left: -20px;
+            z-index: 0;
+            transition: all 0.5s ease;
+        }
+
+        /* Color-specific decorative elements */
+        .dashboard-card.students::after { background: radial-gradient(circle, rgba(0,123,255,0.15) 0%, rgba(0,123,255,0) 70%); }
+        .dashboard-card.cooks::after { background: radial-gradient(circle, rgba(255,193,7,0.15) 0%, rgba(255,193,7,0) 70%); }
+        .dashboard-card.rations::after { background: radial-gradient(circle, rgba(23,162,184,0.15) 0%, rgba(23,162,184,0) 70%); }
+        .dashboard-card.announcements::after { background: radial-gradient(circle, rgba(111,66,193,0.15) 0%, rgba(111,66,193,0) 70%); }
+
+        .dashboard-card > * {
+            position: relative; /* Ensure content stays above decorative elements */
+            z-index: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr; /* Single column on smaller screens */
+                padding: 20px;
+                margin-top: 20px;
+            }
+            .dashboard-card {
+                min-height: auto;
+                padding: 20px;
+            }
+            .dashboard-card h3 {
+                font-size: 1.4em;
+            }
+            .dashboard-card p {
+                font-size: 1em;
+            }
+            .admin-header {
+                flex-direction: column; /* Stack items vertically */
+                padding: 15px 20px;
+                position: relative;
+                height: auto; /* Allow header to adjust height */
+            }
+            .admin-profile-logo {
+                position: static; /* Remove absolute positioning */
+                transform: none; /* Remove transform */
+                margin-bottom: 10px; /* Add space below logo */
+            }
+            .logout-button {
+                position: static;
+                margin-top: 15px;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-content {
+                padding: 15px;
+                gap: 20px;
+            }
+            .dashboard-card {
+                padding: 15px;
+            }
+            .dashboard-card h3 {
+                font-size: 1.2em;
+            }
+            .dashboard-card p {
+                font-size: 0.9em;
+            }
+            .card-icon {
+                font-size: 2.5em;
+            }
+            .dashboard-card .card-button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+            .admin-header h1 {
+                font-size: 1.8em;
+            }
+            .admin-header p {
+                font-size: 0.9em;
+            }
+            .logout-button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            .admin-profile-logo {
+                width: 60px; /* Smaller logo on very small screens */
+                height: 60px;
+            }
+        }
+
+        /* Scrolling Text Footer */
+        .scrolling-text-container {
+            width: 100%;
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scroll-left 40s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <img src="admin.jpg" alt="Admin Profile" class="admin-profile-logo" />
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p>Manage Hostel Operations</p>
+        </div>
+        <button class="logout-button" id="logoutBtn">Logout</button>
+    </header>
+
+  <main class="dashboard-content" id="mainDashboard">
+  <div class="dashboard-card students" id="studentDetailsCard">
+    <i class="fas fa-user-graduate card-icon"></i>
+    <h3>Student Details</h3>
+    <p>View and manage all student registrations, attendance, and SSP IDs.</p>
+    <button class="card-button" id="manageStudentsBtn">Manage Students</button>
+  </div>
+
+  <div class="dashboard-card cooks" id="cookDetailsCard">
+    <i class="fas fa-hat-chef card-icon"></i>
+    <h3>Cook Details</h3>
+    <p>Access information about the hostel's cooking staff and their schedules.</p>
+    <button class="card-button" id="manageChiefsBtn">Manage Chiefs</button>
+  </div>
+
+  <div class="dashboard-card rations">
+    <i class="fas fa-boxes-stacked card-icon"></i>
+    <h3>Reserve Ration</h3>
+    <p>Handle inventory and manage the reservation and distribution of food rations.</p>
+    <button class="card-button" onclick="window.location.href='manage_ration/ration-dashboard.html'">Manage Rations</button>
+  </div>
+
+  <div class="dashboard-card announcements">
+    <i class="fas fa-bullhorn card-icon"></i>
+    <h3>BCWD Announcements</h3>
+    <p>Create, view, and publish important announcements for students and staff.</p>
+    <button class="card-button">Post Announcements</button>
+  </div>
+</main>
+
+<!-- Student Management Section -->
+<div class="dashboard-content" id="studentManagementSection" style="display: none;">
+  <div class="dashboard-card students">
+    <i class="fas fa-user-plus card-icon"></i>
+    <h3>Register Student</h3>
+    <p>Add a new student to the hostel database with all required details.</p>
+    <button onclick="localStorage.removeItem('studentToUpdate'); window.location.href='student_register.html'">
+    Register Student
+</button>
+
+  </div>
+
+  <div class="dashboard-card students">
+    <i class="fas fa-user-edit card-icon"></i>
+    <h3>Update Student</h3>
+    <p>Edit existing student data such as name, SSP ID, attendance, etc.</p>
+     <button class="card-button" onclick="window.location.href='update-student.html'">Update</button>
+  </div>
+
+  <div class="dashboard-card students">
+    <i class="fas fa-users-cog card-icon"></i>
+    <h3>Manage Students</h3>
+    <p>View, filter, or delete student entries from the student list.</p>
+    <button class="card-button" onclick="window.location.href='manage-students.html'">Manage</button>
+  </div>
+
+  <div class="dashboard-card students">
+    <i class="fas fa-user-minus card-icon"></i>
+    <h3>Delete Student</h3>
+    <p>Permanently remove a student's record and all associated files.</p>
+    <button class="card-button" onclick="window.location.href='delete-student.html'">Delete</button>
+</div>
+
+  
+</div>
+
+<!-- Chief Management Section -->
+<div class="dashboard-content" id="chiefManagementSection" style="display: none;">
+  <div class="dashboard-card cooks">
+    <i class="fas fa-user-plus card-icon"></i>
+    <h3>Register Chief</h3>
+    <p>Add a new chief/cook to the staff records.</p>
+    <button class="card-button" onclick="window.location.href='chief_register.html'">Register</button>
+
+  </div>
+
+ 
+
+  <div class="dashboard-card cooks">
+    <i class="fas fa-users-cog card-icon"></i>
+    <h3>Manage Chiefs</h3>
+    <p>View, assign tasks, or remove cooking staff from the database.</p>
+    <button class="card-button" onclick="window.location.href='manage_chiefs.html'">Manage</button>
+
+  </div>
+
+  <div style="text-align: center; width: 100%;">
+    <button class="logout-button" onclick="backToDashboard()">Back to Dashboard</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      alert('Admin logged out!');
+      window.location.href = "index.html";
+    });
+
+    // Student toggle
+    document.getElementById('manageStudentsBtn').addEventListener('click', () => {
+      document.getElementById('mainDashboard').style.display = 'none';
+      document.getElementById('studentManagementSection').style.display = 'grid';
+    });
+
+    // Chief toggle
+    document.getElementById('manageChiefsBtn').addEventListener('click', () => {
+      document.getElementById('mainDashboard').style.display = 'none';
+      document.getElementById('chiefManagementSection').style.display = 'grid';
+    });
+  });
+
+  function backToDashboard() {
+    document.getElementById('studentManagementSection').style.display = 'none';
+    document.getElementById('chiefManagementSection').style.display = 'none';
+    document.getElementById('mainDashboard').style.display = 'grid';
+  }
+</script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            logoutBtn.addEventListener('click', () => {
+                alert('Admin logged out!');
+                window.location.href = "index.html"; // Redirect back to the main login page
+            });
+
+            // You can add more functionality to the buttons in each card here.
+            document.getElementById('studentDetailsCard').querySelector('.card-button').addEventListener('click', () => {
+                alert('Navigating to Student Management...');
+                // window.location.href = "student_management.html"; // Example redirect
+            });
+
+            document.getElementById('cookDetailsCard').querySelector('.card-button').addEventListener('click', () => {
+                alert('Navigating to Cook Management...');
+            });
+
+            document.getElementById('reserveRationCard').querySelector('.card-button').addEventListener('click', () => {
+                alert('Navigating to Ration Management...');
+            });
+
+            document.getElementById('bcmAnnouncementCard').querySelector('.card-button').addEventListener('click', () => {
+                alert('Navigating to Announcement Management...');
+            });
+        });
+    </script>
+</body>
+</html>
+

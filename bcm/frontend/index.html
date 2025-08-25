@@ -1,0 +1,1525 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BCM Hostel Login</title>
+    <link rel="stylesheet" href="style.css"/>
+    <style>
+        /* New styles to reduce container width for specific chief sections */
+        .container.small-width {
+            max-width: 400px; /* Adjust as needed */
+            margin: 20px auto;
+        }
+
+        .attendance-details {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .attendance-details p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .attendance-time-date {
+            text-align: right;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="d-devraj-arasu-.eng.jpg" alt="D. Devaraj Urs" class="profile-image" />
+
+    <h1 class="heading">D. Devaraj Urs Backward Classes Welfare Department</h1>
+    <div class="subheading">BCM Hostel Meal Confirmation System</div>
+
+    <div class="menu-toggle" id="menuToggle">☰</div>
+    <nav class="side-nav" id="sideNav">
+        <ul>
+            <li><a href="#" class="nav-link" id="homeLink">Student Login</a></li>
+            <li><a href="#" class="nav-link" id="foodMenuLink">Food Menu</a></li>
+            <li><a href="#" class="nav-link" id="adminLoginLink">Admin Login</a></li>
+            <li><a href="#" class="nav-link" id="chiefLoginLink">Chief Login</a></li>
+            <li><a href="#" class="nav-link" id="scholarshipsLink">Scholarships</a></li>
+            <li><a href="#" class="nav-link" id="monthlyKitLink">Monthly Kit</a></li>
+        </ul>
+    </nav>
+
+    <div class="content-area-with-background">
+ <div class="container" id="loginContainer">
+    <h2>Student Login</h2>
+    <!-- Login Form -->
+<form id="loginForm">
+  <label for="loginHostel">Hostel:</label>
+  <select id="loginHostel" required>
+    <option value="">--Select Hostel--</option>
+    <option value="BCWD-1343">BCWD-1343</option>
+    <option value="BCWD-1344">BCWD-1344</option>
+    <!-- Add more if needed -->
+  </select>
+
+  <label for="loginSspId">SSP ID:</label>
+  <input type="text" id="loginSspId" required />
+
+  <label for="loginPassword">Password:</label>
+  <input type="password" id="loginPassword" required />
+
+  <button type="submit" id="loginSubmitBtn">Login</button>
+</form>
+
+    <p id="loginError" class="error-message"></p>
+    <button id="registerBtn">Register Here</button>
+    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+</div>
+
+<div class="container" id="registerContainer" style="display: none;">
+    <h2>Student Registration</h2>
+    <form id="registerForm">
+        <label for="regName">Name:</label>
+        <input type="text" id="regName" placeholder="Enter your name" required />
+
+        <label for="regSspId">SSP ID:</label>
+        <input type="text" id="regSspId" placeholder="Enter your SSP ID" required />
+
+        <label for="regHostel">Select Hostel:</label>
+        <select id="regHostel" required>
+            <option value="">--Select Hostel--</option>
+            <option value="BCWD-1343">BCWD-1343</option>
+            <option value="BCWD-1345">BCWD-1345</option>
+        </select>
+
+        <label for="regPhone">Mobile Number:</label>
+        <input type="text" id="regPhone" placeholder="Enter 10-digit mobile number" maxlength="10" required />
+
+        <label for="regPassword">Password:</label>
+        <input type="password" id="regPassword" placeholder="Enter your password" required />
+
+        <button type="submit">Register</button>
+    </form>
+    <p id="registerError" class="error-message"></p>
+    <button id="backToLoginBtn">Back to Login</button>
+</div>
+
+<!-- Forgot Password (Step 1) -->
+<div class="container" id="forgotPasswordContainer" style="display: none;">
+    <h2>Forgot Password</h2>
+    <label for="fpHostel">Select Hostel:</label>
+    <select id="fpHostel">
+        <option value="">--Select Hostel--</option>
+        <option value="BCWD-1343">BCWD-1343</option>
+        <option value="BCWD-1345">BCWD-1345</option>
+    </select>
+
+    <label for="fpSspId">SSP ID:</label>
+    <input type="text" id="fpSspId" />
+
+    <label for="fpMobile">Mobile Number:</label>
+    <input type="text" id="fpMobile" maxlength="10" />
+
+    <button type="button" id="sendOtpBtn" style="display: none;">Send OTP</button>
+
+    <div id="otpSection" style="display: none;">
+        <label for="fpOtp">Enter OTP:</label>
+        <input type="text" id="fpOtp" />
+        <button type="button" id="validateOtpBtn">Validate OTP</button>
+    </div>
+</div>
+
+<!-- Reset Password (Step 2) -->
+<div class="container" id="resetPasswordContainer" style="display: none;">
+    <h2>Reset Password</h2>
+    <form id="resetPasswordForm">
+        <label for="newPassword">New Password:</label>
+        <input type="password" id="newPassword" required />
+
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" required />
+
+        <button type="button" id="resetPasswordBtn">Reset Password</button>
+    </form>
+</div>
+
+<script>
+// LOGIN
+document.getElementById("loginForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const hostel = document.getElementById("loginHostel").value.trim();
+  const sspId = document.getElementById("loginSspId").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  if (!hostel || !sspId || !password) {
+    alert("Please fill all fields.");
+    return;
+  }
+
+  fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ hostel, sspId, password }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        return res.text().then(text => {
+          console.error("Login error raw response:", text);
+          throw new Error("Login failed");
+        });
+      }
+      return res.json();
+    })
+    .then((data) => {
+      alert("Login successful!");
+     localStorage.setItem("studentName", data.name);
+     localStorage.setItem("sspId", data.sspId);       // ✅ Store SSP ID
+     localStorage.setItem("hostel", data.hostel);     // ✅ Store hostel (optional but useful)
+
+      window.location.href = "confirm.html";
+    })
+    .catch((err) => {
+      alert("Login error: " + err.message);
+    });
+});
+
+// REGISTRATION
+document.getElementById("registerBtn").addEventListener("click", () => {
+  document.getElementById("loginContainer").style.display = "none";
+  document.getElementById("registerContainer").style.display = "block";
+});
+document.getElementById("backToLoginBtn").addEventListener("click", () => {
+  document.getElementById("registerContainer").style.display = "none";
+  document.getElementById("loginContainer").style.display = "block";
+});
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("regName").value.trim();
+  const sspId = document.getElementById("regSspId").value.trim();
+  const hostel = document.getElementById("regHostel").value.trim();
+  const phone = document.getElementById("regPhone").value.trim();
+  const password = document.getElementById("regPassword").value.trim();
+
+  if (!/^\d{10}$/.test(phone)) {
+    document.getElementById("registerError").textContent = "Mobile number must be 10 digits.";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, sspId, hostel, phone, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      document.getElementById("registerForm").reset();
+      document.getElementById("registerContainer").style.display = "none";
+      document.getElementById("loginContainer").style.display = "block";
+    } else {
+      document.getElementById("registerError").textContent = data.message || "Registration failed";
+    }
+  } catch (error) {
+    console.error("Registration error:", error);
+    document.getElementById("registerError").textContent = "Registration failed";
+  }
+});
+
+// FORGOT PASSWORD
+document.getElementById("forgotPasswordLink").addEventListener("click", () => {
+  document.getElementById("loginContainer").style.display = "none";
+  document.getElementById("forgotPasswordContainer").style.display = "block";
+});
+
+const mobileInput = document.getElementById("fpMobile");
+const sendOtpBtn = document.getElementById("sendOtpBtn");
+const otpSection = document.getElementById("otpSection");
+
+mobileInput.addEventListener("input", () => {
+  const mobile = mobileInput.value;
+  if (/^\d{10}$/.test(mobile)) {
+    sendOtpBtn.style.display = "block";
+  } else {
+    sendOtpBtn.style.display = "none";
+    otpSection.style.display = "none";
+  }
+});
+
+sendOtpBtn.addEventListener("click", async () => {
+  const hostel = document.getElementById("fpHostel").value.trim();
+  const sspId = document.getElementById("fpSspId").value.trim();
+  const phone = document.getElementById("fpMobile").value.trim();
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hostel, sspId, phone })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("OTP (for demo): " + data.otp);
+      otpSection.style.display = "block";
+    } else {
+      alert(data.message || "Failed to send OTP");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send OTP");
+  }
+});
+
+document.getElementById("validateOtpBtn").addEventListener("click", async () => {
+  const sspId = document.getElementById("fpSspId").value.trim();
+  const otp = document.getElementById("fpOtp").value.trim();
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/validate-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sspId, otp })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      document.getElementById("forgotPasswordContainer").style.display = "none";
+      document.getElementById("resetPasswordContainer").style.display = "block";
+    } else {
+      alert(data.message || "Invalid OTP");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Validation failed");
+  }
+});
+
+document.getElementById("resetPasswordBtn").addEventListener("click", async () => {
+  const newPass = document.getElementById("newPassword").value.trim();
+  const confirmPass = document.getElementById("confirmPassword").value.trim();
+  const sspId = document.getElementById("fpSspId").value.trim();
+
+  if (newPass !== confirmPass) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sspId, newPassword: newPass })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      document.getElementById("resetPasswordContainer").style.display = "none";
+      document.getElementById("loginContainer").style.display = "block";
+    } else {
+      alert(data.message || "Reset failed");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Reset failed");
+  }
+});
+</script>
+
+
+        <div class="container menu-container" id="foodMenuContainer" style="display: none;">
+            <h1>BCM Hostel Food Menu</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Breakfast</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Day">Monday</td>
+                        <td data-label="Breakfast">Kharabhath and Kesaribath & Pickle</td>
+                        <td data-label="Lunch">Dal Tadka, Jeera Rice, Mix Veg Sabzi</td>
+                        <td data-label="Dinner">Chicken Curry, Roti, Salad</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Tuesday</td>
+                        <td data-label="Breakfast">Poha with Peanuts & Coriander</td>
+                        <td data-label="Lunch">Rajma Chawal, Aloo Gobhi</td>
+                        <td data-label="Dinner">Paneer Butter Masala, Naan/Roti</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Wednesday</td>
+                        <td data-label="Breakfast">Idli with Sambar & Coconut Chutney</td>
+                        <td data-label="Lunch">Chole Bhature, Onion Salad</td>
+                        <td data-label="Dinner">Egg Curry, Rice, Kachumber Salad</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Thursday</td>
+                        <td data-label="Breakfast">Vegetable Upma</td>
+                        <td data-label="Lunch">Kadhi Chawal, Bhindi Fry</td>
+                        <td data-label="Dinner">Kadhi Chawal, Bhindi Fry</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Friday</td>
+                        <td data-label="Breakfast">Bread Omelette</td>
+                        <td data-label="Lunch">Aloo Matar, Puri, Boondi Raita</td>
+                        <td data-label="Dinner">Dal Makhani, Laccha Paratha, Green Salad</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Saturday</td>
+                        <td data-label="Breakfast">Puri Bhaji</td>
+                        <td data-label="Lunch">Veg Pulao, Curd, Papadam</td>
+                        <td data-label="Dinner">Palak Paneer, Tawa Roti, Mix Veg Raita</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Day">Sunday</td>
+                        <td data-label="Breakfast">Chole Kulche</td>
+                        <td data-label="Lunch">Chicken Korma, Steamed Rice, Green Salad</td>
+                        <td data-label="Dinner">Pav Bhaji with extra Butter</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="back-button-container">
+                <button class="back-button" id="backToLoginFromMenu">Back to Login</button>
+            </div>
+        </div>
+
+
+<!-- ✅ Admin Login Container -->
+<div class="container" id="adminLoginContainer" style="display: block;">
+  <h2>Admin Login</h2>
+  <form id="adminLoginForm">
+    <label for="adminLoginEmail">Login Email:</label>
+    <input
+      type="email"
+      id="adminLoginEmail"
+      placeholder="Enter your email"
+      required
+    />
+
+    <label for="adminLoginPassword">Password:</label>
+    <input
+      type="password"
+      id="adminLoginPassword"
+      placeholder="Enter your password"
+      required
+    />
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="adminLoginError" class="error-message"></p>
+
+  <button id="newAdminRegisterBtn">New Register</button>
+  <p><a href="#" id="adminForgotPasswordLink">Forgot Password?</a></p>
+</div>
+
+
+<!-- ✅ Admin Registration Container -->
+<div class="container" id="adminRegisterContainer" style="display: none;">
+  <h2>Admin Registration</h2>
+  <form id="adminRegisterForm">
+    <label for="adminName">Admin Name:</label>
+    <input type="text" id="adminName" placeholder="Enter Admin Name" required />
+
+    <label for="adminEmail">Email ID:</label>
+    <input type="email" id="adminEmail" placeholder="Enter Email ID" required />
+
+    <label for="adminPhone">Phone Number:</label>
+    <input type="text" id="adminPhone" placeholder="Enter Phone Number" required />
+
+    <label for="adminSetPassword">Set Password:</label>
+    <input type="password" id="adminSetPassword" placeholder="Set Password" required />
+
+    <button type="submit">Register Admin</button>
+  </form>
+  <p id="adminRegisterError" class="error-message"></p>
+  <button id="backToAdminLoginBtn">Back to Admin Login</button>
+</div>
+
+<!-- ✅ Forgot Password Container -->
+<div class="container" id="adminForgotPasswordContainer" style="display: none;">
+  <h2>Forgot Password</h2>
+  <label for="adminForgotEmail">Email:</label>
+  <input type="email" id="adminForgotEmail" placeholder="Enter Email" required />
+
+  <label for="adminForgotPhone">Phone:</label>
+  <input type="text" id="adminForgotPhone" placeholder="Enter Phone Number" required />
+
+  <button id="adminSendOtpBtn">Send OTP</button>
+  <button id="backToLoginFromForgotBtn">Back to Login</button>
+</div>
+
+<!-- ✅ OTP Verification Section -->
+<div class="container" id="adminOtpSection" style="display: none;">
+  <h2>Enter OTP</h2>
+  <label for="adminOtp">OTP:</label>
+  <input type="text" id="adminOtp" placeholder="Enter OTP" required />
+  <button id="adminValidateOtpBtn">Verify OTP</button>
+</div>
+
+<!-- ✅ Set New Password -->
+<div class="container" id="adminNewPasswordContainer" style="display: none;">
+  <h2>Set New Password</h2>
+  <label for="newAdminPassword">New Password:</label>
+  <input type="password" id="newAdminPassword" required />
+
+  <label for="confirmAdminPassword">Confirm Password:</label>
+  <input type="password" id="confirmAdminPassword" required />
+
+  <button id="setAdminPasswordBtn">Set Password</button>
+  <p id="adminPasswordSetMessage"></p>
+</div>
+
+
+<!-- ✅ JavaScript Logic -->
+<script>
+  let currentAdminEmail = "";
+
+document.addEventListener("DOMContentLoaded", function () {
+  const adminLoginContainer = document.getElementById("adminLoginContainer");
+  const adminRegisterContainer = document.getElementById("adminRegisterContainer");
+  const forgotContainer = document.getElementById("adminForgotPasswordContainer");
+  const otpSection = document.getElementById("adminOtpSection");
+  const newPasswordContainer = document.getElementById("adminNewPasswordContainer");
+
+  // Show registration form
+  document.getElementById("newAdminRegisterBtn").addEventListener("click", () => {
+    adminLoginContainer.style.display = "none";
+    adminRegisterContainer.style.display = "block";
+  });
+
+  // Back to login from registration
+  document.getElementById("backToAdminLoginBtn").addEventListener("click", () => {
+    adminRegisterContainer.style.display = "none";
+    adminLoginContainer.style.display = "block";
+  });
+
+  // Show forgot password form
+  document.getElementById("adminForgotPasswordLink").addEventListener("click", () => {
+    adminLoginContainer.style.display = "none";
+    forgotContainer.style.display = "block";
+  });
+
+  // Back to login from forgot password
+  document.getElementById("backToLoginFromForgotBtn").addEventListener("click", () => {
+    forgotContainer.style.display = "none";
+    adminLoginContainer.style.display = "block";
+  });
+
+  // Admin Login
+ // Admin Login
+document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("adminLoginEmail").value.trim();
+  const password = document.getElementById("adminLoginPassword").value.trim();
+  const errorMsg = document.getElementById("adminLoginError");
+
+  try {
+    const res = await fetch("http://localhost:5000/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      // Redirect to admin dashboard
+      window.location.href = "admin_dashboard.html";
+    } else {
+      errorMsg.textContent = data.message || "Login failed.";
+    }
+  } catch (err) {
+    console.error(err);
+    errorMsg.textContent = "Server error during login.";
+  }
+});
+
+  // Send OTP
+  document.getElementById("adminSendOtpBtn").addEventListener("click", async () => {
+  const email = document.getElementById("adminForgotEmail").value.trim();
+  const phone = document.getElementById("adminForgotPhone").value.trim();
+
+  if (!email || !/^\d{10}$/.test(phone)) {
+    alert("Enter valid email and 10-digit phone number.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/admin/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, phone })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("OTP (demo): " + data.otp);
+      currentAdminEmail = email;  // Store the email for later use
+      forgotContainer.style.display = "none";
+      otpSection.style.display = "block";
+    } else {
+      alert(data.message || "Failed to send OTP");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error sending OTP");
+  }
+});
+
+  // Verify OTP
+  document.getElementById("adminValidateOtpBtn").addEventListener("click", async () => {
+  const otp = document.getElementById("adminOtp").value.trim();
+
+  try {
+    const res = await fetch("http://localhost:5000/api/admin/validate-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentAdminEmail, otp })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("OTP Verified");
+      otpSection.style.display = "none";
+      newPasswordContainer.style.display = "block";
+    } else {
+      alert(data.message || "Invalid OTP");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("OTP verification error");
+  }
+});
+
+  // Set new password
+ document.getElementById("setAdminPasswordBtn").addEventListener("click", async () => {
+  const newPass = document.getElementById("newAdminPassword").value.trim();
+  const confirmPass = document.getElementById("confirmAdminPassword").value.trim();
+  const msg = document.getElementById("adminPasswordSetMessage");
+
+  if (!newPass || newPass !== confirmPass) {
+    msg.textContent = "Passwords do not match.";
+    msg.className = "error-message";
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/admin/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentAdminEmail, newPassword: newPass })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      msg.textContent = "Password reset successful!";
+      msg.className = "success-message";
+
+      const backBtn = document.createElement("button");
+      backBtn.textContent = "Back to Admin Login";
+      backBtn.onclick = () => {
+        newPasswordContainer.style.display = "none";
+        adminLoginContainer.style.display = "block";
+      };
+      msg.appendChild(document.createElement("br"));
+      msg.appendChild(backBtn);
+    } else {
+      msg.textContent = data.message || "Reset failed";
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Reset failed";
+  }
+});
+
+
+  // ✅ Register New Admin (Last part you mentioned!)
+  document.getElementById("adminRegisterForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("adminName").value.trim();
+    const email = document.getElementById("adminEmail").value.trim();
+    const phone = document.getElementById("adminPhone").value.trim();
+    const password = document.getElementById("adminSetPassword").value.trim();
+
+    if (!name || !email || !/^\d{10}$/.test(phone) || !password) {
+      alert("Please fill all fields correctly.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Admin registered successfully!");
+        document.getElementById("adminRegisterForm").reset();
+        adminRegisterContainer.style.display = "none";
+        adminLoginContainer.style.display = "block";
+      } else {
+        alert(data.message || "Registration failed");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      alert("Server error during registration");
+    }
+  });
+});
+</script>
+
+
+
+
+
+      
+
+        <div class="container" id="scholarshipsContainer" style="display: none;">
+            <h2>Scholarships</h2>
+            <div class="scholarship-info">
+                <h3>State Scholarship Portal (SSP)</h3>
+                <p>Apply for various state-funded scholarships and track your application status.</p>
+                <a href="https://ssp.postmatric.karnataka.gov.in/2425_sa/signin.aspx" target="_blank" class="scholarship-link">Visit SSP Portal</a>
+            </div>
+            <div class="scholarship-info">
+                <h3>National Scholarship Portal (NSP)</h3>
+                <p>A one-stop solution for various scholarship schemes offered by Central Ministries and UGC.</p>
+                <a href="https://scholarships.gov.in/" target="_blank" class="scholarship-link">Visit NSP Portal</a>
+            </div>
+            <div class="scholarship-info">
+                <h3>BCWD Hostel Scholarship</h3>
+                <p>Specific scholarships available for students residing in Backward Classes Welfare Department hostels. Contact your hostel warden for more details.</p>
+                <a href="#" onclick="alert('Please contact your hostel warden for BCWD Hostel Scholarship details.'); return false;" class="scholarship-link">Learn More (Contact Hostel)</a>
+            </div>
+            <div class="back-button-container">
+                <button class="back-button" id="backToLoginFromScholarships">Back to Login</button>
+            </div>
+        </div>
+
+        <div class="container" id="monthlyKitContainer" style="display: none;">
+            <h2>Monthly Kit Collection</h2>
+            <form id="monthlyKitForm">
+                <label for="kitSspId">Enter your SSP ID:</label>
+                <input type="text" id="kitSspId" placeholder="Enter your SSP ID" required />
+
+                <label for="kitName">Enter your Name:</label>
+                <input type="text" id="kitName" placeholder="Enter your Name" required />
+
+                <label for="kitPassword">Enter your Password:</label>
+                <input type="text" id="kitPassword" placeholder="Enter your Password" required />
+
+                <label for="kitDate">Select Date:</label>
+                <input type="date" id="kitDate" required />
+
+                <label>Collection Status:</label>
+                <div class="radio-group">
+                    <input type="radio" id="collected" name="kitStatus" value="Collected" required>
+                    <label for="collected">Collected</label>
+                    <input type="radio" id="notCollected" name="kitStatus" value="Not Collected">
+                    <label for="notCollected">Not Collected</label>
+                </div>
+                <div id="reasonForNotCollected" style="display: none;">
+                    <label for="notCollectedReason">Reason for not collecting:</label>
+                    <input type="text" id="notCollectedReason" placeholder="Enter reason" />
+                </div>
+
+                <button type="submit" id="collectKitBtn">Collect Kit</button>
+            </form>
+            <p id="monthlyKitMessage" class="success-message" style="display: none;"></p>
+            <p class="kit-motto" style="font-style: italic; margin-top: 15px; text-align: center;">
+                "Every resource matters. Use your monthly kit wisely, reduce waste, and build a sustainable future!"
+            </p>
+            <div class="back-button-container">
+                <button class="back-button" id="backToLoginFromMonthlyKit">Back to Login</button>
+            </div>
+        </div>
+
+        <div class="container" id="kitCollectedSuccessContainer" style="display: none;">
+            <h2>Monthly Kit Status</h2>
+            <p style="font-size: 1.2em; text-align: center; color: green;">Your kit is ready! Please collect your kit.</p>
+            <div class="back-button-container">
+                <button class="back-button" id="backToLoginFromKitSuccess">Back to Login</button>
+            </div>
+        </div>
+
+        <div class="container" id="kitNotCollectedWarningContainer" style="display: none;">
+            <h2>Monthly Kit Status</h2>
+            <p style="font-size: 1.2em; text-align: center; color: red;">Please collect your kit next month without missing. If you miss, no one is responsible for this.</p>
+            <div class="back-button-container">
+                <button class="back-button" id="backToLoginFromKitWarning">Back to Login</button>
+            </div>
+        </div>
+
+
+
+
+       <div class="container" id="chiefLoginContainer" style="display: none;">
+      <h2>Chief Login</h2>
+        <form id="chiefLoginForm">
+        <label for="chiefLoginId">Login ID:</label>
+        <input type="text" id="chiefLoginId" placeholder="Enter Chief Login ID" required />
+
+        <label for="chiefPassword">Password:</label>
+        <input type="password" id="chiefPassword" placeholder="Enter Password" required />
+
+        <button type="submit">Login</button>
+        </form>
+       <p id="chiefLoginError" class="error-message"></p>
+
+<p>Don't have an account? <a href="#" onclick="document.getElementById('chiefLoginContainer').style.display='none'; document.getElementById('chiefRegisterContainer').style.display='block'; return false;">Register here</a></p>
+
+    
+       |
+<a href="#" 
+   onclick="document.getElementById('chiefLoginContainer').style.display='none'; document.getElementById('chiefForgotPasswordContainer').style.display='block'; return false;"
+   id="chiefForgotPasswordBtn">Forgot Password?</a>
+
+<a href="#" 
+   onclick="document.getElementById('chiefLoginContainer').style.display='none'; document.getElementById('loginContainer').style.display='block'; return false;">
+   Back to Main Login
+</a>
+
+
+
+       </div>
+
+<div class="container small-width" id="chiefRegisterContainer" style="display: none;">
+    <h2>Chief Registration</h2>
+    <form id="chiefRegisterForm" >
+        <label for="chiefName">Chief Name:</label>
+        <input type="text" id="chiefName" placeholder="Enter Chief Name" required />
+
+        <label for="chiefAadharLast4">Last 4 digits of Aadhar:</label>
+        <input type="text" id="chiefAadharLast4" placeholder="Enter last 4 Aadhar digits" pattern="[0-9]{4}" maxlength="4" required />
+
+        <label for="chiefSetLoginId">Set Login ID:</label>
+        <input type="text" id="chiefSetLoginId" placeholder="Set Login ID" required />
+
+        <label for="chiefSetPassword">Set Password:</label>
+        <input type="password" id="chiefSetPassword" placeholder="Set Password" required />
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p id="chiefRegisterError" class="error-message"></p>
+
+    <!-- Initially hidden button, shown only after registration -->
+    <button id="backToChiefLoginBtn" style="display: none;" onclick="document.getElementById('chiefRegisterContainer').style.display='none'; document.getElementById('chiefLoginContainer').style.display='block';">Back to Chief Login</button>
+</div>
+
+
+<div class="container small-width" id="chiefForgotPasswordContainer" style="display: none;">
+    <h2>Forgot Password</h2>
+    
+    <form id="chiefForgotPasswordForm" onsubmit="return handleForgotPasswordSubmit(event)">
+        <label for="forgotChiefLoginId">Enter Chief Login ID:</label>
+        <input type="text" id="forgotChiefLoginId" placeholder="Enter Chief Login ID" required />
+
+        <label for="forgotChiefAadharLast4">Enter last 4 digits of Aadhar:</label>
+        <input type="text" id="forgotChiefAadharLast4" placeholder="Enter last 4 Aadhar digits" pattern="[0-9]{4}" maxlength="4" required />
+
+        <button type="submit">Confirm Information</button>
+    </form>
+
+    <p id="chiefForgotPasswordMessage" class="success-message" style="display: none;"></p>
+
+    <button id="backToChiefLoginFromForgot" type="button" 
+        onclick="document.getElementById('chiefForgotPasswordContainer').style.display='none'; document.getElementById('chiefLoginContainer').style.display='block';">
+        Chief Login
+    </button>
+</div>
+
+<!-- CHIEF OTP VERIFICATION FORM -->
+<div class="container small-width" id="chiefOtpForm" style="display: none;">
+  <h2>Verify OTP</h2>
+  <form id="chiefOtpVerificationForm">
+    <label for="chiefOtp">Enter OTP:</label>
+    <input type="text" id="chiefOtp" placeholder="Enter OTP" required />
+    <button type="submit">Verify OTP</button>
+  </form>
+</div>
+
+<!-- CHIEF RESET PASSWORD FORM -->
+<div class="container small-width" id="chiefResetPasswordForm" style="display: none;">
+  <h2>Set New Password</h2>
+  <form id="chiefResetPasswordForm">
+    <label for="chiefNewPassword">New Password:</label>
+    <input type="password" id="chiefNewPassword" required />
+    <button type="submit">Reset Password</button>
+  </form>
+</div>
+
+
+
+<div class="container small-width" id="chiefNewPasswordContainer" style="display: none;">
+    <h2>Reset Password</h2>
+    <form id="chiefNewPasswordForm" onsubmit="return handleNewPasswordSubmit(event)">
+        <label for="newChiefPassword">Enter New Password:</label>
+        <input type="password" id="newChiefPassword" placeholder="New Password" required />
+
+        <label for="confirmChiefPassword">Confirm Password:</label>
+        <input type="password" id="confirmChiefPassword" placeholder="Confirm Password" required />
+
+        <button type="submit">Reset Password</button>
+    </form>
+    <p id="chiefNewPasswordMessage" class="success-message" style="display: none;"></p>
+    <button id="backToChiefLoginFromReset" style="display: none;" type="button" 
+        onclick="document.getElementById('chiefNewPasswordContainer').style.display='none'; document.getElementById('chiefLoginContainer').style.display='block';">
+        Back to Chief Login
+    </button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Toggle Views
+    document.getElementById('showChiefRegisterForm').addEventListener('click', function () {
+      document.getElementById('chiefLoginForm').style.display = 'none';
+      document.getElementById('chiefRegisterForm').style.display = 'block';
+    });
+
+    document.getElementById('backToChiefLoginBtn').addEventListener('click', function () {
+      document.getElementById('chiefRegisterForm').style.display = 'none';
+      document.getElementById('chiefLoginForm').style.display = 'block';
+    });
+
+    // CHIEF REGISTER HANDLER
+    document.getElementById('chiefRegisterForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const name = document.getElementById('chiefName').value.trim();
+      const aadharLast4 = document.getElementById('chiefAadharLast4').value.trim();
+      const loginId = document.getElementById('chiefSetLoginId').value.trim();
+      const password = document.getElementById('chiefSetPassword').value;
+
+      if (!name || !aadharLast4 || !loginId || !password) {
+        document.getElementById('chiefRegisterError').innerText = 'All fields are required.';
+        document.getElementById('chiefRegisterError').style.color = 'red';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/chief/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, aadharLast4, loginId, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('chiefRegisterError').innerText = 'Registration successfully completed!';
+          document.getElementById('chiefRegisterError').style.color = 'green';
+          document.getElementById('backToChiefLoginBtn').style.display = 'inline-block';
+          document.getElementById('chiefRegisterForm').reset();
+        } else {
+          document.getElementById('chiefRegisterError').innerText = data.error || 'Registration failed.';
+          document.getElementById('chiefRegisterError').style.color = 'red';
+        }
+      } catch (err) {
+        console.error('Registration error:', err);
+        document.getElementById('chiefRegisterError').innerText = 'Server error. Please try again.';
+        document.getElementById('chiefRegisterError').style.color = 'red';
+      }
+    });
+
+    // CHIEF LOGIN HANDLER
+    document.getElementById('chiefLoginForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const loginId = document.getElementById('chiefLoginId').value.trim();
+      const password = document.getElementById('chiefPassword').value;
+
+      if (!loginId || !password) {
+        document.getElementById('chiefLoginError').innerText = 'Both fields are required.';
+        document.getElementById('chiefLoginError').style.color = 'red';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/chief/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          window.location.href = 'chief_dashboard.html';
+        } else {
+          document.getElementById('chiefLoginError').innerText = data.error || 'Login failed.';
+          document.getElementById('chiefLoginError').style.color = 'red';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        document.getElementById('chiefLoginError').innerText = 'Server error. Please try again.';
+        document.getElementById('chiefLoginError').style.color = 'red';
+      }
+    });
+
+    // CHIEF FORGOT PASSWORD HANDLER
+    document.getElementById('chiefForgotPasswordForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const loginId = document.getElementById('forgotChiefLoginId').value;
+
+      try {
+        const res = await fetch('/api/chief/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('OTP sent to registered email!');
+          document.getElementById('chiefForgotPasswordForm').style.display = 'none';
+          document.getElementById('chiefOtpForm').style.display = 'block';
+        } else {
+          alert(data.error || 'Error sending OTP');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error');
+      }
+    });
+
+    // CHIEF VERIFY OTP HANDLER
+    document.getElementById('chiefOtpForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const loginId = document.getElementById('chiefForgotLoginId').value;
+      const otp = document.getElementById('chiefOtp').value;
+
+      try {
+        const res = await fetch('/api/chief/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, otp })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('OTP verified. Please set new password.');
+          document.getElementById('chiefOtpForm').style.display = 'none';
+          document.getElementById('chiefResetPasswordForm').style.display = 'block';
+        } else {
+          alert(data.error || 'OTP verification failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error');
+      }
+    });
+
+    // CHIEF RESET PASSWORD HANDLER
+    document.getElementById('chiefResetPasswordForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const loginId = document.getElementById('chiefForgotLoginId').value;
+      const newPassword = document.getElementById('chiefNewPassword').value;
+
+      try {
+        const res = await fetch('/api/chief/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ loginId, newPassword })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('Password reset successful. You can now login.');
+          document.getElementById('chiefResetPasswordForm').reset();
+          document.getElementById('chiefResetPasswordForm').style.display = 'none';
+          document.getElementById('chiefLoginForm').style.display = 'block';
+        } else {
+          alert(data.error || 'Password reset failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Server error');
+      }
+    });
+  });
+</script>
+
+
+
+        <div class="container" id="chiefDashboardContainer" style="display: none;">
+            <h2>Student Attendance Details</h2>
+            <div class="attendance-time-date">
+                <p id="currentDateTime"></p>
+            </div>
+            <div class="attendance-details">
+                <p>Number of students present at morning breakfast: <span id="breakfastCount">85</span></p>
+                <p>Number of students present for lunch: <span id="lunchCount">110</span></p>
+                <p>Number of students present for dinner: <span id="dinnerCount">95</span></p>
+            </div>
+            <div class="back-button-container">
+                <button class="back-button" id="backToChiefLoginFromDashboard">Back to Chief Login</button>
+            </div>
+        </div>
+
+        <div class="scrolling-text-container">
+            <div class="scrolling-text">
+                From farm to fork, and not to landfill. Saving food is a circular solution. &nbsp; &nbsp; The plate you clear responsibly clears the way for a sustainable future. &nbsp; &nbsp; Food waste isn't just wasted food, it's wasted water, wasted energy, wasted hope. &nbsp; &nbsp; ............................ This website was Developed by  Arasu private solutions Group .............              &nbsp; &nbsp;
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const loginContainer = document.getElementById('loginContainer');
+            const registerContainer = document.getElementById('registerContainer');
+            const foodMenuContainer = document.getElementById('foodMenuContainer');
+            const adminLoginContainer = document.getElementById('adminLoginContainer');
+            const adminRegisterContainer = document.getElementById('adminRegisterContainer');
+            const scholarshipsContainer = document.getElementById('scholarshipsContainer');
+            const monthlyKitContainer = document.getElementById('monthlyKitContainer');
+            const kitCollectedSuccessContainer = document.getElementById('kitCollectedSuccessContainer');
+            const kitNotCollectedWarningContainer = document.getElementById('kitNotCollectedWarningContainer');
+            const chiefLoginContainer = document.getElementById('chiefLoginContainer');
+            const chiefRegisterContainer = document.getElementById('chiefRegisterContainer');
+            const chiefForgotPasswordContainer = document.getElementById('chiefForgotPasswordContainer');
+            const chiefDashboardContainer = document.getElementById('chiefDashboardContainer');
+
+
+            const registerBtn = document.getElementById('registerBtn');
+            const backToLoginBtn = document.getElementById('backToLoginBtn');
+            const backToLoginFromMenuBtn = document.getElementById('backToLoginFromMenu');
+            const newAdminRegisterBtn = document.getElementById('newAdminRegisterBtn');
+            const backToAdminLoginBtn = document.getElementById('backToAdminLoginBtn');
+            const backToMainLoginFromAdmin = document.getElementById('backToMainLoginFromAdmin');
+            const backToLoginFromScholarshipsBtn = document.getElementById('backToLoginFromScholarships');
+            const backToLoginFromMonthlyKitBtn = document.getElementById('backToLoginFromMonthlyKit');
+            const backToLoginFromKitSuccessBtn = document.getElementById('backToLoginFromKitSuccess');
+            const backToLoginFromKitWarningBtn = document.getElementById('backToLoginFromKitWarning');
+            const chiefLoginLink = document.getElementById('chiefLoginLink');
+            const newChiefRegisterBtn = document.getElementById('newChiefRegisterBtn');
+            const chiefForgotPasswordBtn = document.getElementById('chiefForgotPasswordBtn');
+            const backToMainLoginFromChief = document.getElementById('backToMainLoginFromChief');
+            const backToChiefLoginBtn = document.getElementById('backToChiefLoginBtn');
+            const backToChiefLoginFromForgot = document.getElementById('backToChiefLoginFromForgot');
+            const backToChiefLoginFromDashboard = document.getElementById('backToChiefLoginFromDashboard');
+
+
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            const adminRegisterForm = document.getElementById('adminRegisterForm');
+            const monthlyKitForm = document.getElementById('monthlyKitForm');
+            const chiefLoginForm = document.getElementById('chiefLoginForm');
+            const chiefRegisterForm = document.getElementById('chiefRegisterForm');
+            const chiefForgotPasswordForm = document.getElementById('chiefForgotPasswordForm');
+
+
+            const hostelSelect = document.getElementById('hostel');
+            const sspIdInput = document.getElementById('sspId');
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
+            const adminLoginError = document.getElementById('adminLoginError');
+            const adminRegisterError = document.getElementById('adminRegisterError');
+            const monthlyKitMessage = document.getElementById('monthlyKitMessage');
+            const chiefLoginError = document.getElementById('chiefLoginError');
+            const chiefRegisterError = document.getElementById('chiefRegisterError');
+            const chiefForgotPasswordMessage = document.getElementById('chiefForgotPasswordMessage');
+            const currentDateTime = document.getElementById('currentDateTime');
+
+
+            const menuToggle = document.getElementById('menuToggle');
+            const sideNav = document.getElementById('sideNav');
+            const foodMenuLink = document.getElementById('foodMenuLink');
+            const homeLink = document.getElementById('homeLink');
+            const adminLoginLink = document.getElementById('adminLoginLink');
+            const scholarshipsLink = document.getElementById('scholarshipsLink');
+            const monthlyKitLink = document.getElementById('monthlyKitLink');
+
+            const collectedRadio = document.getElementById('collected');
+            const notCollectedRadio = document.getElementById('notCollected');
+            const reasonForNotCollectedDiv = document.getElementById('reasonForNotCollected');
+            const notCollectedReasonInput = document.getElementById('notCollectedReason');
+
+
+            function showSection(sectionId) {
+                loginContainer.style.display = 'none';
+                registerContainer.style.display = 'none';
+                foodMenuContainer.style.display = 'none';
+                adminLoginContainer.style.display = 'none';
+                adminRegisterContainer.style.display = 'none';
+                scholarshipsContainer.style.display = 'none';
+                monthlyKitContainer.style.display = 'none';
+                kitCollectedSuccessContainer.style.display = 'none';
+                kitNotCollectedWarningContainer.style.display = 'none';
+                chiefLoginContainer.style.display = 'none';
+                chiefRegisterContainer.style.display = 'none';
+                chiefForgotPasswordContainer.style.display = 'none';
+                chiefDashboardContainer.style.display = 'none';
+
+
+                loginError.textContent = '';
+                registerError.textContent = '';
+                adminLoginError.textContent = '';
+                adminRegisterError.textContent = '';
+                monthlyKitMessage.textContent = '';
+                monthlyKitMessage.style.display = 'none';
+                chiefLoginError.textContent = '';
+                chiefRegisterError.textContent = '';
+                chiefForgotPasswordMessage.textContent = '';
+                chiefForgotPasswordMessage.style.display = 'none';
+
+
+                if (sectionId === 'login') {
+                    loginContainer.style.display = 'block';
+                } else if (sectionId === 'register') {
+                    registerContainer.style.display = 'block';
+                } else if (sectionId === 'foodMenu') {
+                    foodMenuContainer.style.display = 'block';
+                } else if (sectionId === 'adminLogin') {
+                    adminLoginContainer.style.display = 'block';
+                } else if (sectionId === 'adminRegister') {
+                    adminRegisterContainer.style.display = 'block';
+                } else if (sectionId === 'scholarships') {
+                    scholarshipsContainer.style.display = 'block';
+                } else if (sectionId === 'monthlyKit') {
+                    monthlyKitContainer.style.display = 'block';
+                } else if (sectionId === 'kitCollectedSuccess') {
+                    kitCollectedSuccessContainer.style.display = 'block';
+                } else if (sectionId === 'kitNotCollectedWarning') {
+                    kitNotCollectedWarningContainer.style.display = 'block';
+                } else if (sectionId === 'chiefLogin') {
+                    chiefLoginContainer.style.display = 'block';
+                } else if (sectionId === 'chiefRegister') {
+                    chiefRegisterContainer.style.display = 'block';
+                } else if (sectionId === 'chiefForgotPassword') {
+                    chiefForgotPasswordContainer.style.display = 'block';
+                } else if (sectionId === 'chiefDashboard') {
+                    chiefDashboardContainer.style.display = 'block';
+                    updateChiefDashboardDateTime(); // Only update time/date
+                }
+
+                sideNav.classList.remove('active');
+            }
+
+            showSection('login');
+
+            menuToggle.addEventListener('click', () => {
+                sideNav.classList.toggle('active');
+            });
+
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('login');
+            });
+
+            foodMenuLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('foodMenu');
+            });
+
+            adminLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('adminLogin');
+            });
+
+            scholarshipsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('scholarships');
+            });
+
+            monthlyKitLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('monthlyKit');
+            });
+
+            chiefLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('chiefLogin');
+            });
+
+            registerBtn.addEventListener('click', () => {
+                showSection('register');
+            });
+
+            backToLoginBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToLoginFromMenuBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToLoginFromScholarshipsBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToLoginFromMonthlyKitBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToLoginFromKitSuccessBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToLoginFromKitWarningBtn.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const sspIdReg = document.getElementById('sspIdReg').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+
+                if (name === '' || sspIdReg === '' || phone === '') {
+                    registerError.textContent = 'All registration fields are required.';
+                    return;
+                }
+                if (!/^[0-9]{10}$/.test(phone)) {
+                    registerError.textContent = 'Phone number must be 10 digits.';
+                    return;
+                }
+
+                alert('Sign up successfully! Please log in.');
+                registerForm.reset();
+                showSection('login');
+            });
+
+            loginForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const hostel = hostelSelect.value.trim();
+                const sspId = sspIdInput.value.trim();
+
+                if (hostel === "" || sspId === "") {
+                    loginError.textContent = "Please select a hostel and enter your SSP ID.";
+                    return;
+                } else {
+                    loginError.textContent = "";
+                }
+
+                localStorage.setItem("hostel", hostel);
+                localStorage.setItem("sspId", sspId);
+
+                window.location.href = "confirm.html";
+            });
+
+            newAdminRegisterBtn.addEventListener('click', () => {
+                showSection('adminRegister');
+            });
+
+            backToAdminLoginBtn.addEventListener('click', () => {
+                showSection('adminLogin');
+            });
+
+            backToMainLoginFromAdmin.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            adminLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const adminLoginId = document.getElementById('adminLoginId').value.trim();
+                const adminPassword = document.getElementById('adminPassword').value.trim();
+
+                if (adminLoginId === '' || adminPassword === '') {
+                    adminLoginError.textContent = 'Both Login ID and Password are required.';
+                    return;
+                }
+
+                alert('Admin Login Successful!');
+                adminLoginForm.reset();
+                window.location.href = "admin_dashboard.html";
+            });
+
+            adminRegisterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const adminName = document.getElementById('adminName').value.trim();
+                const adminEmail = document.getElementById('adminEmail').value.trim();
+                const adminSetPassword = document.getElementById('adminSetPassword').value.trim();
+
+                if (adminName === '' || adminEmail === '' || adminSetPassword === '') {
+                    adminRegisterError.textContent = 'All registration fields are required.';
+                    return;
+                }
+                if (!/\S+@\S+\.\S+/.test(adminEmail)) {
+                    adminRegisterError.textContent = 'Please enter a valid email address.';
+                    return;
+                }
+                if (adminSetPassword.length < 6) {
+                    adminRegisterError.textContent = 'Password must be at least 6 characters long.';
+                    return;
+                }
+
+                alert('Admin registration successful! Please log in with your new credentials.');
+                adminRegisterForm.reset();
+                showSection('adminLogin');
+            });
+
+            collectedRadio.addEventListener('change', () => {
+                if (collectedRadio.checked) {
+                    reasonForNotCollectedDiv.style.display = 'none';
+                    notCollectedReasonInput.removeAttribute('required');
+                }
+            });
+
+            notCollectedRadio.addEventListener('change', () => {
+                if (notCollectedRadio.checked) {
+                    reasonForNotCollectedDiv.style.display = 'block';
+                    notCollectedReasonInput.setAttribute('required', 'required');
+                }
+            });
+
+            monthlyKitForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const kitSspId = document.getElementById('kitSspId').value.trim();
+                const kitName = document.getElementById('kitName').value.trim();
+                const kitDate = document.getElementById('kitDate').value.trim();
+                const kitStatus = document.querySelector('input[name="kitStatus"]:checked');
+                const notCollectedReason = document.getElementById('notCollectedReason').value.trim();
+
+                if (kitSspId === '' || kitName === '' || kitDate === '' || !kitStatus) {
+                    monthlyKitMessage.textContent = 'Please fill in all the details, including collection status.';
+                    monthlyKitMessage.style.color = 'red';
+                    monthlyKitMessage.style.display = 'block';
+                    return;
+                }
+
+                if (kitStatus.value === 'Not Collected' && notCollectedReason === '') {
+                    monthlyKitMessage.textContent = 'Please provide a reason for not collecting the kit.';
+                    monthlyKitMessage.style.color = 'red';
+                    monthlyKitMessage.style.display = 'block';
+                    return;
+                }
+
+                if (kitStatus.value === 'Collected') {
+                    showSection('kitCollectedSuccess');
+                } else if (kitStatus.value === 'Not Collected') {
+                    showSection('kitNotCollectedWarning');
+                }
+
+                monthlyKitForm.reset();
+                reasonForNotCollectedDiv.style.display = 'none';
+            });
+
+            // --- Chief Login Flow ---
+            chiefLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const chiefLoginId = document.getElementById('chiefLoginId').value.trim();
+                const chiefPassword = document.getElementById('chiefPassword').value.trim();
+
+                if (chiefLoginId === '' || chiefPassword === '') {
+                    chiefLoginError.textContent = 'Both Login ID and Password are required.';
+                    return;
+                }
+                
+                alert('Chief Login Successful!');
+                chiefLoginForm.reset();
+                showSection('chiefDashboard');
+            });
+
+            newChiefRegisterBtn.addEventListener('click', () => {
+                showSection('chiefRegister');
+            });
+
+            chiefForgotPasswordBtn.addEventListener('click', () => {
+                showSection('chiefForgotPassword');
+            });
+
+            backToMainLoginFromChief.addEventListener('click', () => {
+                showSection('login');
+            });
+
+            backToChiefLoginBtn.addEventListener('click', () => {
+                showSection('chiefLogin');
+            });
+
+            backToChiefLoginFromForgot.addEventListener('click', () => {
+                showSection('chiefLogin');
+            });
+
+            backToChiefLoginFromDashboard.addEventListener('click', () => {
+                showSection('chiefLogin');
+            });
+
+            chiefRegisterForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const chiefName = document.getElementById('chiefName').value.trim();
+                const chiefAadharLast4 = document.getElementById('chiefAadharLast4').value.trim();
+                const chiefSetLoginId = document.getElementById('chiefSetLoginId').value.trim();
+                const chiefSetPassword = document.getElementById('chiefSetPassword').value.trim();
+
+                if (chiefName === '' || chiefAadharLast4 === '' || chiefSetLoginId === '' || chiefSetPassword === '') {
+                    chiefRegisterError.textContent = 'All registration fields are required.';
+                    return;
+                }
+                if (!/^[0-9]{4}$/.test(chiefAadharLast4)) {
+                    chiefRegisterError.textContent = 'Aadhar last 4 digits must be exactly 4 numbers.';
+                    return;
+                }
+                if (chiefSetPassword.length < 6) {
+                    chiefRegisterError.textContent = 'Password must be at least 6 characters long.';
+                    return;
+                }
+
+                alert('Registration successful!');
+                chiefRegisterForm.reset();
+                showSection('chiefLogin');
+            });
+
+            chiefForgotPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const forgotChiefLoginId = document.getElementById('forgotChiefLoginId').value.trim();
+                const forgotChiefAadharLast4 = document.getElementById('forgotChiefAadharLast4').value.trim();
+
+                if (forgotChiefLoginId === '' || forgotChiefAadharLast4 === '') {
+                    chiefForgotPasswordMessage.textContent = 'Both Login ID and Aadhar last 4 digits are required.';
+                    chiefForgotPasswordMessage.style.color = 'red';
+                    chiefForgotPasswordMessage.style.display = 'block';
+                    return;
+                }
+                if (!/^[0-9]{4}$/.test(forgotChiefAadharLast4)) {
+                    chiefForgotPasswordMessage.textContent = 'Aadhar last 4 digits must be exactly 4 numbers.';
+                    chiefForgotPasswordMessage.style.color = 'red';
+                    chiefForgotPasswordMessage.style.display = 'block';
+                    return;
+                }
+
+                chiefForgotPasswordMessage.textContent = 'If the details are correct, you will receive a password reset link/instruction.';
+                chiefForgotPasswordMessage.style.color = 'green';
+                chiefForgotPasswordMessage.style.display = 'block';
+                chiefForgotPasswordForm.reset();
+            });
+
+            // Function to update Chief Dashboard time and date
+            function updateChiefDashboardDateTime() {
+                const now = new Date();
+                const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const optionsTime = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+
+                currentDateTime.textContent = `${now.toLocaleDateString('en-US', optionsDate)} ${now.toLocaleTimeString('en-US', optionsTime)}`;
+            }
+
+            // Update time every second on the dashboard if it's visible
+            setInterval(() => {
+                if (chiefDashboardContainer.style.display === 'block') {
+                    updateChiefDashboardDateTime();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Chiefs</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fb;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .chief-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .chief-card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      width: 220px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .chief-card img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .chief-card p {
+      margin: 5px 0;
+      font-size: 0.9em;
+    }
+
+    .chief-card button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .chief-card button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <h1>Manage Chiefs</h1>
+  <div class="chief-grid" id="chiefList"></div>
+
+  <script>
+    async function fetchChiefs() {
+      const res = await fetch('/kitchen-chief/all');
+      const data = await res.json();
+
+      if (data.success) {
+        const container = document.getElementById('chiefList');
+        container.innerHTML = '';
+
+        data.chiefs.forEach(chief => {
+          const card = document.createElement('div');
+          card.className = 'chief-card';
+          card.innerHTML = `
+            <img src="/uploads/${chief.photo}" alt="Chief Photo">
+            <p><strong>ID:</strong> ${chief.loginId}</p>
+            <p><strong>${chief.name}</strong></p>
+            <button onclick='showChiefDetail(${JSON.stringify(chief)})'>View Details</button>
+          `;
+          container.appendChild(card);
+        });
+      } else {
+        alert('Failed to load chiefs');
+      }
+    }
+
+    function showChiefDetail(chief) {
+      const detailWindow = window.open('', '_blank');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Chief Details</title>
+          <style>
+            body { font-family: Arial; padding: 20px; }
+            h2 { margin-bottom: 20px; }
+            img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; }
+            p { font-size: 1em; line-height: 1.6; }
+            button {
+              margin-top: 20px;
+              padding: 10px 20px;
+              background: #007bff;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              font-size: 1em;
+              cursor: pointer;
+            }
+          </style>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+        </head>
+        <body>
+          <h2>Chief Details</h2>
+          <img src="/uploads/${chief.photo}" alt="Chief Photo"/>
+          <p><strong>Name:</strong> ${chief.name}</p>
+          <p><strong>Login ID:</strong> ${chief.loginId}</p>
+          <p><strong>Age:</strong> ${chief.age}</p>
+          <p><strong>Gender:</strong> ${chief.gender}</p>
+          <p><strong>Mobile:</strong> ${chief.mobile}</p>
+          <p><strong>Address:</strong> ${chief.address}</p>
+          <p><strong>Aadhar:</strong> ${chief.aadhar}</p>
+          <p><strong>Account:</strong> ${chief.account}</p>
+          <p><strong>IFSC:</strong> ${chief.ifsc}</p>
+
+          <button onclick="generatePDF()">Download as PDF</button>
+
+     <script>
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Chief Details", 10, 10);
+
+    doc.setFontSize(12);
+    doc.text("Name: ${chief.name}", 10, 30);
+    doc.text("Login ID: ${chief.loginId}", 10, 40);
+    doc.text("Age: ${chief.age}", 10, 50);
+    doc.text("Gender: ${chief.gender}", 10, 60);
+    doc.text("Mobile: ${chief.mobile}", 10, 70);
+    doc.text("Address: ${chief.address}", 10, 80);
+    doc.text("Aadhar: ${chief.aadhar}", 10, 90);
+    doc.text("Account: ${chief.account}", 10, 100);
+    doc.text("IFSC: ${chief.ifsc}", 10, 110);
+
+    // Load image as Base64
+    const imageUrl = "/uploads/${chief.photo}";
+    const img = new Image();
+    img.crossOrigin = "Anonymous"; // Important
+    img.src = imageUrl;
+
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      const base64Image = canvas.toDataURL("image/png");
+      doc.addImage(base64Image, "PNG", 140, 10, 50, 50); // Position it nicely
+
+      doc.save("Chief_${chief.loginId}.pdf");
+    };
+
+    img.onerror = function () {
+      alert("Error loading image for PDF. Downloading without photo.");
+      doc.save("Chief_${chief.loginId}.pdf");
+    };
+  }
+<\/script>
+
+        </body>
+        </html>
+      `;
+
+      detailWindow.document.write(htmlContent);
+      detailWindow.document.close();
+    }
+
+    fetchChiefs();
+  </script>
+</body>
+</html>

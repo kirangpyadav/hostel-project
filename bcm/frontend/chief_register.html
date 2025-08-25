@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register Chief</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Your existing CSS remains unchanged */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f6;
+      color: #333;
+    }
+
+    .form-section {
+      max-width: 700px;
+      margin: 50px auto;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(5px);
+    }
+
+    .form-section h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+      font-size: 2em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 15px;
+      font-size: 1em;
+      border: 1px solid #000;
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: border 0.3s ease;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #888;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    .form-group input[type="file"] {
+      padding: 8px;
+    }
+
+    .card-button {
+      display: block;
+      width: fit-content;
+      margin: 30px auto 0 auto;
+      padding: 12px 25px;
+      font-size: 1em;
+      font-weight: bold;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+    }
+
+    .card-button:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(40, 167, 69, 0.3);
+    }
+
+    .success-message {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin-top: 20px;
+      display: none;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-section">
+    <h2>Register Chief</h2>
+
+   <form id="chiefForm" enctype="multipart/form-data" novalidate>
+
+      <div class="form-group">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" min="18" max="100" placeholder="Enter your age" required />
+      </div>
+
+      <div class="form-group">
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+          <option value="" disabled selected>Select gender</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="mobile">Mobile Number:</label>
+        <input type="tel" id="mobile" name="mobile" pattern="[0-9]{10}" placeholder="Enter 10-digit mobile number" required />
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address (as per Aadhar):</label>
+        <textarea id="address" name="address" rows="3" placeholder="Enter address as per Aadhar" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="aadhar">Aadhar Number:</label>
+        <input type="text" id="aadhar" name="aadhar" pattern="\d{12}" placeholder="Enter 12-digit Aadhar number" required />
+      </div>
+
+      <div class="form-group">
+        <label for="aadharFile">Upload Aadhar Card (Max 200KB):</label>
+        <input type="file" id="aadharFile" name="aadharFile" accept=".jpg,.jpeg,.png,.pdf" required />
+      </div>
+
+      <div class="form-group">
+        <label for="account">Bank Account Number:</label>
+        <input type="text" id="account" name="account" placeholder="Enter bank account number" required />
+      </div>
+
+      <div class="form-group">
+        <label for="ifsc">IFSC Code:</label>
+        <input type="text" id="ifsc" name="ifsc" placeholder="Enter IFSC code" pattern="[A-Z]{4}0[A-Z0-9]{6}" required />
+      </div>
+
+      <div class="form-group">
+        <label for="passbook">Upload Bank Passbook:</label>
+        <input type="file" id="passbook" name="passbook" accept=".jpg,.jpeg,.png,.pdf" required />
+      </div>
+
+      <div class="form-group">
+        <label for="photo">Upload Recent Photo (JPG/PNG, Max 200KB):</label>
+        <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png" required />
+      </div>
+
+      <button type="submit" class="card-button">Submit</button>
+    </form>
+
+    <div class="success-message" id="successMsg">
+      Chief registered successfully!
+    </div>
+  </div>
+
+  <script>
+const form = document.getElementById('chiefForm');
+const successMsg = document.getElementById('successMsg');
+
+form.addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const aadharFile = formData.get('aadharFile');
+  const photo = formData.get('photo');
+
+  if (aadharFile && aadharFile.size > 200 * 1024) {
+    alert("Aadhar card file must be less than 200KB");
+    return;
+  }
+
+  if (photo && photo.size > 200 * 1024) {
+    alert("Photo must be less than 200KB");
+    return;
+  }
+
+  const res = await fetch('/kitchen-chief/register', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    form.style.display = 'none';
+    
+  
+    successMsg.innerHTML = `Chief registered successfully!<br>Your Login ID is: <strong>${data.loginId}</strong>`;
+    successMsg.style.display = 'block';
+  } else {
+    alert("Something went wrong!");
+  }
+});
+</script>
+
+
+</body>
+</html>

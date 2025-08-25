@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meal Confirmation</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="slideshow-background">
+        <img src="Food-Photos-Save-Lives-1.jpg" alt="Saving Food Photo 1" class="slideshow-image active" />
+        <img src="Food-Photos-Save-Lives-2.jpg" alt="Saving Food Photo 2" class="slideshow-image inactive-start" />
+        <img src="Food-Photos-Save-Lives-3.jpg" alt="Saving Food Photo 3" class="slideshow-image inactive-start" />
+    </div>
+
+    <h1 class="heading">Save Food, Save Lives</h1>
+    <div class="subheading">BCM Hostel Meal Confirmation System</div>
+
+    <div class="container">
+        <h2>Meal Confirmation</h2>
+        <p id="userInfo" class="user-info"></p>
+
+        <form id="mealForm">
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" name="meal" value="breakfast" class="meal-option" /> Breakfast
+                </label>
+                <label>
+                    <input type="checkbox" name="meal" value="lunch" class="meal-option" /> Lunch
+                </label>
+                <label>
+                    <input type="checkbox" name="meal" value="dinner" id="dinnerCheckbox" class="meal-option" /> Dinner
+                </label>
+                <label>
+                    <input type="checkbox" name="meal" value="Non Available" id="nonAvailableCheckbox" /> Non Available
+                </label>
+            </div>
+
+            <div id="dinnerPreference" style="display: none;">
+                <h3>Dinner Preference:</h3>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="dinnerType" value="Veg" /> Veg
+                    </label>
+                    <label>
+                        <input type="radio" name="dinnerType" value="Non-Veg" /> Non-Veg
+                    </label>
+                </div>
+            </div>
+            <button type="submit">Confirm Meals</button>
+        </form>
+        <p id="mealError" class="error-message"></p>
+    </div>
+
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const name = localStorage.getItem("studentName");
+    const sspId = localStorage.getItem("sspId");
+    const hostel = localStorage.getItem("hostel");
+
+    const userInfo = document.getElementById("userInfo");
+    const mealForm = document.getElementById("mealForm");
+    const mealError = document.getElementById("mealError");
+
+    const mealOptionCheckboxes = document.querySelectorAll(".meal-option");
+    const dinnerCheckbox = document.getElementById("dinnerCheckbox");
+    const nonAvailableCheckbox = document.getElementById("nonAvailableCheckbox");
+
+    const dinnerPreferenceDiv = document.getElementById("dinnerPreference");
+    const dinnerTypeRadios = document.querySelectorAll("input[name='dinnerType']");
+
+    // Slideshow logic
+    const slideshowImages = document.querySelectorAll('.slideshow-image');
+    let currentImageIndex = 0;
+
+    function startSlideshow() {
+        setInterval(() => {
+            slideshowImages[currentImageIndex].classList.remove('active');
+            slideshowImages[currentImageIndex].classList.add('slide-out-right');
+
+            currentImageIndex = (currentImageIndex + 1) % slideshowImages.length;
+
+            setTimeout(() => {
+                slideshowImages.forEach(img => {
+                    img.classList.remove('slide-out-right', 'slide-in-left', 'inactive-start');
+                });
+                slideshowImages[currentImageIndex].classList.add('active', 'slide-in-left');
+            }, 50);
+        }, 3000);
+    }
+
+    startSlideshow();
+
+    if (hostel && sspId && name) {
+        userInfo.textContent = `Name: ${name}, Hostel: ${hostel}, SSP ID: ${sspId}`;
+    } else {
+        userInfo.textContent = "User information not found. Please log in first.";
+        alert("Session expired or user information missing. Please log in again.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    nonAvailableCheckbox.addEventListener("change", function () {
+        if (nonAvailableCheckbox.checked) {
+            mealOptionCheckboxes.forEach(checkbox => {
+                if (checkbox !== nonAvailableCheckbox) {
+                    checkbox.checked = false;
+                }
+            });
+            dinnerPreferenceDiv.style.display = "none";
+            dinnerTypeRadios.forEach(radio => radio.checked = false);
+        }
+    });
+
+    mealOptionCheckboxes.forEach(checkbox => {
+        if (checkbox !== nonAvailableCheckbox) {
+            checkbox.addEventListener("change", function () {
+                if (checkbox.checked) {
+                    nonAvailableCheckbox.checked = false;
+                }
+            });
+        }
+    });
+
+    dinnerCheckbox.addEventListener("change", function () {
+        if (dinnerCheckbox.checked) {
+            dinnerPreferenceDiv.style.display = "block";
+        } else {
+            dinnerPreferenceDiv.style.display = "none";
+            dinnerTypeRadios.forEach(radio => radio.checked = false);
+        }
+    });
+
+    mealForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const selectedMeals = [];
+        let dinnerTypeSelected = null;
+
+        mealOptionCheckboxes.forEach((checkbox) => {
+            if (checkbox.checked && checkbox.value !== 'dinner' && checkbox.value !== 'Non Available') {
+                selectedMeals.push(checkbox.value);
+            }
+        });
+
+        if (dinnerCheckbox.checked) {
+            dinnerTypeRadios.forEach(radio => {
+                if (radio.checked) {
+                    dinnerTypeSelected = radio.value;
+                }
+            });
+
+            if (!dinnerTypeSelected) {
+                mealError.textContent = "Please select 'Veg' or 'Non-Veg' for Dinner.";
+                return;
+            }
+            selectedMeals.push(`Dinner (${dinnerTypeSelected})`);
+        }
+
+        if (nonAvailableCheckbox.checked) {
+            selectedMeals.length = 0;
+            selectedMeals.push("Non Available");
+        }
+
+        if (selectedMeals.length === 0) {
+            mealError.textContent = "Please select at least one meal or 'Non Available' to confirm.";
+            return;
+        } else {
+            mealError.textContent = "";
+        }
+
+        // Prepare data for backend
+        const mealData = {
+            name: name || "Unknown",
+            hostel: hostel || "Unknown",
+            sspId: sspId || "Unknown",
+            meals: selectedMeals,
+        };
+
+        try {
+            const response = await fetch("http://localhost:5000/api/meals/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(mealData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Meals submitted successfully!");
+                localStorage.setItem("selectedMeals", JSON.stringify(selectedMeals));
+                window.location.href = "thankyou.html";
+            } else {
+                mealError.textContent = result.message || "Error submitting meals.";
+            }
+        } catch (err) {
+            console.error("Submission error:", err);
+            mealError.textContent = "Server error. Please try again later.";
+        }
+    });
+});
+</script>
+
+
+</body>
+</html>

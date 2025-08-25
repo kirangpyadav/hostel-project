@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ration Management Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header h2 {
+            font-size: 2rem;
+            color: #333;
+            margin: 0;
+        }
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .action-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #addNewItemBtn { background-color: #007bff; color: white; }
+        #addStockBtn { background-color: #28a745; color: white; }
+        #viewHistoryBtn { background-color: #6c757d; color: white; }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .item-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .item-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .item-image-container {
+            width: 100%;
+            height: 200px;
+            background-color: #f0f0f0;
+        }
+        .item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .item-info {
+            padding: 1rem;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .item-info h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .item-stock {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-top: 1rem;
+        }
+        .item-stock.low { color: #dc3545; }
+        .item-stock .unit {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 2rem; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 12px; position: relative; }
+        .close-btn { color: #aaa; position: absolute; top: 1rem; right: 1.5rem; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        input, select, button { width: 100%; padding: 0.75rem; font-family: 'Poppins', sans-serif; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .message { text-align: center; padding: 1rem; border-radius: 5px; margin-top: 1rem; display: none; }
+        .message.success { background-color: #d4edda; color: #155724; }
+        .message.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2>Ration Dashboard</h2>
+            <div class="actions">
+                <button id="addNewItemBtn" class="action-btn">Add New Item Type</button>
+                <button id="addStockBtn" class="action-btn">Record Incoming Stock</button>
+                <button id="viewHistoryBtn" class="action-btn">View Full History</button>
+            </div>
+        </div>
+
+        <div id="inventoryGrid" class="inventory-grid"></div>
+        <p id="loadingMessage">Loading inventory...</p>
+    </div>
+
+    <!-- Add New Item Modal -->
+    <div id="newItemModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Add New Item Type</h3>
+            <form id="newItemForm">
+                <div class="form-group"><label for="itemName">Item Name</label><input type="text" id="itemName" required></div>
+                <div class="form-group"><label for="unit">Unit (e.g., kg, liters)</label><input type="text" id="unit" required></div>
+                <div class="form-group"><label for="category">Category</label><input type="text" id="category" required></div>
+                <div class="form-group"><label for="itemImage">Item Photo</label><input type="file" id="itemImage" name="itemImage" accept="image/*" required></div>
+                <button type="submit" class="action-btn" style="background-color:#007bff;">Add to Inventory</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Stock Modal -->
+    <div id="addStockModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Record Incoming Stock</h3>
+            <form id="addStockForm">
+                <div class="form-group"><label for="existingItem">Select Item</label><select id="existingItem" required></select></div>
+                <div class="form-group"><label for="quantity">Quantity to Add</label><input type="number" id="quantity" required min="0.1" step="any"></div>
+                <div class="form-group"><label for="source">Source</label><select id="source" required><option value="Government Supply">Government Supply</option><option value="Local Purchase">Local Purchase</option><option value="Donation">Donation</option><option value="Other">Other</option></select></div>
+                <button type="submit" class="action-btn" style="background-color:#28a745;">Add Stock</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="messageBox" class="message"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const messageBox = document.getElementById('messageBox');
+            
+            const newItemModal = document.getElementById('newItemModal');
+            const addStockModal = document.getElementById('addStockModal');
+            const newItemForm = document.getElementById('newItemForm');
+            const addStockForm = document.getElementById('addStockForm');
+            const existingItemSelect = document.getElementById('existingItem');
+
+            const addNewItemBtn = document.getElementById('addNewItemBtn');
+            const addStockBtn = document.getElementById('addStockBtn');
+
+            function setupModals() {
+                const modals = document.querySelectorAll('.modal');
+                const closeBtns = document.querySelectorAll('.close-btn');
+                
+                addNewItemBtn.onclick = () => newItemModal.style.display = 'block';
+                addStockBtn.onclick = () => addStockModal.style.display = 'block';
+                
+                closeBtns.forEach(btn => btn.onclick = () => modals.forEach(m => m.style.display = 'none'));
+                window.onclick = (event) => {
+                    modals.forEach(m => { if (event.target == m) m.style.display = 'none'; });
+                };
+            }
+
+            async function fetchAndDisplayInventory() {
+                inventoryGrid.innerHTML = '';
+                loadingMessage.style.display = 'block';
+                try {
+                    const response = await fetch('/api/rations/inventory');
+                    if (!response.ok) throw new Error('Could not fetch inventory.');
+                    const items = await response.json();
+                    
+                    loadingMessage.style.display = 'none';
+                    if (items.length === 0) {
+                        inventoryGrid.innerHTML = '<p>No inventory items found. Add a new item type to get started.</p>';
+                        return;
+                    }
+
+                    existingItemSelect.innerHTML = '<option value="">-- Select an Item --</option>';
+                    items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item._id;
+                        option.textContent = `${item.itemName} (${item.unit})`;
+                        existingItemSelect.appendChild(option);
+
+                        const card = document.createElement('div');
+                        card.className = 'item-card';
+                        card.dataset.itemId = item._id;
+                        
+                        const stockClass = item.currentStock <= 10 ? 'low' : '';
+                        const imageSrc = item.itemImage ? `/${item.itemImage}` : 'https://placehold.co/400x300/EFEFEF/AAAAAA&text=No+Image';
+
+                        card.innerHTML = `
+                            <div class="item-image-container">
+                                <img src="${imageSrc}" alt="${item.itemName}" class="item-image">
+                            </div>
+                            <div class="item-info">
+                                <h3>${item.itemName}</h3>
+                                <div class="item-stock ${stockClass}">
+                                    ${item.currentStock} <span class="unit">${item.unit}</span>
+                                </div>
+                            </div>
+                        `;
+                        inventoryGrid.appendChild(card);
+                    });
+                } catch (error) {
+                    loadingMessage.textContent = error.message;
+                }
+            }
+
+            newItemForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(newItemForm);
+
+                try {
+                    const response = await fetch('/api/rations/inventory/add', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    
+                    showMessage(result.message, 'success');
+                    newItemForm.reset();
+                    newItemModal.style.display = 'none';
+                    fetchAndDisplayInventory();
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                }
+            });
+
+            addStockForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const itemId = existingItemSelect.value;
+                const quantity = document.getElementById('quantity').value;
+                const source = document.getElementById('source').value;
+
+                try {
+                    const response = await fetch('/api/rations/transaction/in', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ itemId, quantity, source })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+
+                    showMessage(`Successfully added ${quantity} ${result.item.unit} of ${result.item.itemName}.`, 'success');
+                    addStockForm.reset();
+                    addStockModal.style.display = 'none';
+                    fetchAndDisplayInventory();
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                }
+            });
+            
+            inventoryGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.item-card');
+                if (card) {
+                    const itemId = card.dataset.itemId;
+                    localStorage.setItem('viewRationItemId', itemId);
+                    window.location.href = `ration-item-details.html`;
+                }
+            });
+
+            function showMessage(msg, type) {
+                messageBox.textContent = msg;
+                messageBox.className = `message ${type}`;
+                messageBox.style.display = 'block';
+                setTimeout(() => messageBox.style.display = 'none', 4000);
+            }
+            
+            fetchAndDisplayInventory();
+            setupModals();
+        });
+    </script>
+
+</body>
+</html>

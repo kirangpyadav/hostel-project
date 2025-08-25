@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Kit Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        h2 {
+            color: #0056b3;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+        }
+        .info-message {
+            color: #0056b3;
+        }
+        .warning-message {
+            color: orange;
+            font-weight: bold;
+        }
+        .kit-motto {
+            font-style: italic;
+            margin-top: 25px;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            text-decoration: none; /* For the anchor tag */
+            display: inline-block;
+        }
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="statusTitle">Monthly Kit Status</h2>
+        <p id="statusMessage"></p>
+        <p id="reasonDisplay" style="display: none;"></p>
+        <p class="kit-motto">
+            "Every resource matters. Use your monthly kit wisely, reduce waste, and build a sustainable future!"
+        </p>
+        <a href="index.html" class="back-button">Back to Home</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const statusTitle = document.getElementById('statusTitle');
+            const statusMessage = document.getElementById('statusMessage');
+            const reasonDisplay = document.getElementById('reasonDisplay');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const sspId = urlParams.get('sspId');
+            const name = urlParams.get('name');
+            const status = urlParams.get('status');
+            const reason = urlParams.get('reason');
+
+            if (status === 'Collected') {
+                statusTitle.textContent = "Kit Collection Confirmed!";
+                statusMessage.innerHTML = `<span class="success-message">Thank you, ${name}! Your monthly kit (SSP ID: ${sspId}) has been marked as collected.</span>`;
+                reasonDisplay.style.display = 'none';
+            } else if (status === 'Not Collected') {
+                statusTitle.textContent = "Kit Collection Status";
+                statusMessage.innerHTML = `<span class="warning-message">Hello ${name}, your monthly kit (SSP ID: ${sspId}) was not collected this month.</span>`;
+                reasonDisplay.innerHTML = `Reason provided: <strong>"${reason}"</strong>`;
+                reasonDisplay.style.display = 'block';
+                const nextMonthMessage = document.createElement('p');
+                nextMonthMessage.classList.add('info-message');
+                nextMonthMessage.textContent = "You can collect your kit next month. Please ensure to collect it on time.";
+                statusMessage.parentNode.insertBefore(nextMonthMessage, reasonDisplay.nextSibling); // Insert after reason display
+            } else {
+                statusTitle.textContent = "Error";
+                statusMessage.textContent = "Could not retrieve kit status. Please go back and try again.";
+            }
+        });
+    </script>
+</body>
+</html>
