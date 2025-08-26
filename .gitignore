@@ -1,5 +1,5 @@
 # Dependencies
-node_modules/
+bcm/backend/node_modules/
 
 # Logs
 npm-debug.log*
@@ -14,4 +14,4 @@ Thumbs.db
 .env
 
 # Uploads
-backend/uploads/
+bcm/backend/uploads/
