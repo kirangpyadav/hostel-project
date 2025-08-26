@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chief Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: #000; }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+        .header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .main-content {
+            display: flex;
+            gap: 2rem;
+        }
+        .details-column { flex: 2; }
+        .photo-column { flex: 1; text-align: center; }
+        .chief-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #eee;
+        }
+        .detail-section { margin-bottom: 2rem; }
+        .detail-section h4 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .detail-item strong { color: #555; }
+        .document-list a {
+            display: block;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .document-list a:hover { background-color: #e9ecef; }
+        .actions { text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee; }
+        .download-btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            background-color: #28a745;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .download-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="detailsContainer" style="display:none;">
+        <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+        <div class="header">
+            <h2 id="chiefName"></h2>
+            <p id="chiefLoginId"></p>
+        </div>
+
+        <div class="main-content">
+            <div class="details-column">
+                <div class="detail-section" id="personalInfo"><h4>Personal Information</h4></div>
+                <div class="detail-section" id="bankInfo"><h4>Bank Information</h4></div>
+            </div>
+            <div class="photo-column">
+                <img id="chiefPhoto" src="" alt="Chief Photo" class="chief-photo">
+            </div>
+        </div>
+        
+        <div class="detail-section" id="documentsInfo">
+            <h4>Uploaded Documents</h4>
+            <div class="document-list" id="documentList"></div>
+        </div>
+
+        <div class="actions">
+            <button class="download-btn" id="downloadPdfBtn">Download as PDF</button>
+        </div>
+    </div>
+    <p id="loadingMessage">Loading chief details...</p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const chiefId = localStorage.getItem('viewChiefId');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const container = document.getElementById('detailsContainer');
+
+            if (!chiefId) {
+                loadingMessage.textContent = 'Error: No chief selected.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/kitchen-chief/details/${chiefId}`);
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message);
+                const chief = data.chief;
+
+                document.getElementById('chiefName').textContent = chief.name;
+                document.getElementById('chiefLoginId').textContent = `Login ID: ${chief.loginId}`;
+                document.getElementById('chiefPhoto').src = chief.photo ? `/uploads/${chief.photo}` : 'https://placehold.co/150x150/EFEFEF/AAAAAA&text=No+Photo';
+
+                const addDetail = (sectionId, label, value) => {
+                    if (value) {
+                        document.getElementById(sectionId).innerHTML += `<div class="detail-item"><strong>${label}:</strong> <span>${value}</span></div>`;
+                    }
+                };
+
+                addDetail('personalInfo', 'Age', chief.age);
+                addDetail('personalInfo', 'Gender', chief.gender);
+                addDetail('personalInfo', 'Mobile', chief.mobile);
+                addDetail('personalInfo', 'Address', chief.address);
+                addDetail('personalInfo', 'Aadhar', chief.aadhar);
+
+                addDetail('bankInfo', 'Account No.', chief.account);
+                addDetail('bankInfo', 'IFSC Code', chief.ifsc);
+
+                const documentList = document.getElementById('documentList');
+                if (chief.aadharFile) documentList.innerHTML += `<a href="/uploads/${chief.aadharFile}" target="_blank">Aadhar Card</a>`;
+                if (chief.passbook) documentList.innerHTML += `<a href="/uploads/${chief.passbook}" target="_blank">Bank Passbook</a>`;
+
+                loadingMessage.style.display = 'none';
+                container.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                loadingMessage.textContent = 'Could not load chief details.';
+            }
+        });
+
+        document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+            const chiefId = localStorage.getItem('viewChiefId');
+            const response = await fetch(`/kitchen-chief/details/${chiefId}`);
+            const data = await response.json();
+            const chief = data.chief;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 40;
+
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Chief Details', 105, 20, { align: 'center' });
+            doc.setDrawColor(221, 221, 221);
+            doc.line(20, 28, 190, 28);
+            
+            const addSectionTitle = (title) => {
+                if (y > 260) { doc.addPage(); y = 20; }
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(60, 110, 180);
+                doc.text(title, 20, y);
+                y += 10;
+            };
+
+            const addText = (label, value) => {
+                if (value) {
+                    if (y > 280) { doc.addPage(); y = 20; }
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(80);
+                    doc.text(`${label}:`, 25, y);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(0);
+                    doc.text(String(value), 75, y);
+                    y += 8;
+                }
+            };
+            
+            const imageUrl = document.getElementById('chiefPhoto').src;
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imageUrl;
+            img.onload = function () {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                const base64Image = canvas.toDataURL("image/png");
+                doc.addImage(base64Image, "PNG", 140, 35, 50, 50);
+
+                addSectionTitle('Personal Information');
+                addText('Name', chief.name);
+                addText('Login ID', chief.loginId);
+                addText('Age', chief.age);
+                addText('Gender', chief.gender);
+                addText('Mobile', chief.mobile);
+                addText('Address', chief.address);
+                addText('Aadhar', chief.aadhar);
+                y += 5;
+
+                addSectionTitle('Bank Information');
+                addText('Account No.', chief.account);
+                addText('IFSC Code', chief.ifsc);
+                y += 5;
+
+                addSectionTitle('Uploaded Documents');
+                addText('Aadhar Card', chief.aadharFile);
+                addText('Bank Passbook', chief.passbook);
+                
+                doc.save(`Chief_${chief.loginId}.pdf`);
+            };
+            img.onerror = () => {
+                alert("Could not load image for PDF. Downloading text details only.");
+                // Add text again in case image fails
+                addSectionTitle('Personal Information');
+                addText('Name', chief.name);
+                // ... add all other text fields ...
+                doc.save(`Chief_${chief.loginId}.pdf`);
+            };
+        });
+    </script>
+
+</body>
+</html>

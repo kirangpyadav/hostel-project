@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Student Details</title>
+    <title>Update Chief Details</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
@@ -68,27 +68,45 @@
             margin-top: 1rem;
             font-weight: 500;
         }
+            .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.2s;
+            padding: 0;
+            line-height: 1;
+            width: auto;
+        }
+        .back-btn:hover {
+            color: #000;
+        }
     </style>
 </head>
 <body>
+     <button class="back-btn" onclick="window.history.back()">&#8592;</button>
 
     <div class="search-container">
-        <h2>Update Student Details</h2>
+        <h2>Update Chief Details</h2>
         <div class="form-group">
-            <label for="sspIdSearch">Enter Student's SSP ID to Find</label>
-            <input type="text" id="sspIdSearch" placeholder="11-digit SSP ID" maxlength="11">
+            <label for="loginIdSearch">Enter Chief's 10-Digit Login ID</label>
+            <input type="text" id="loginIdSearch" placeholder="10-digit Login ID" maxlength="10">
         </div>
-        <button id="findBtn">Find Student</button>
+        <button id="findBtn">Find Chief</button>
         <p id="message"></p>
     </div>
 
     <script>
         document.getElementById('findBtn').addEventListener('click', async () => {
-            const sspId = document.getElementById('sspIdSearch').value;
+            const loginId = document.getElementById('loginIdSearch').value;
             const messageEl = document.getElementById('message');
 
-            if (!sspId || sspId.length !== 11) {
-                messageEl.textContent = 'Please enter a valid 11-digit SSP ID.';
+            if (!loginId || loginId.length !== 10) {
+                messageEl.textContent = 'Please enter a valid 10-digit Login ID.';
                 messageEl.style.color = 'red';
                 return;
             }
@@ -98,21 +116,19 @@
 
             try {
                 // We will create this backend route in the next step
-                const response = await fetch(`/api/students/find/${sspId}`);
+                const response = await fetch(`/kitchen-chief/find/${loginId}`);
 
                 if (response.ok) {
-                    const studentData = await response.json();
+                    const chiefData = await response.json();
                     
-                    // Store the found student's data in localStorage
-                    // This is how the next page will know which student to load
-                    localStorage.setItem('studentToUpdate', JSON.stringify(studentData));
+                    // Store the found chief's data in localStorage
+                    localStorage.setItem('chiefToUpdate', JSON.stringify(chiefData));
                     
                     // Redirect to the registration form page to edit the details
-                    // Make sure your registration form is named 'student_register.html' or change the name here
-                    window.location.href = 'student_register.html'; 
+                    window.location.href = 'chief_register.html'; 
                 } else {
                     const error = await response.json();
-                    messageEl.textContent = error.message || 'Student not found.';
+                    messageEl.textContent = error.message || 'Chief not found.';
                     messageEl.style.color = 'red';
                 }
             } catch (err) {
@@ -124,4 +140,4 @@
     </script>
 
 </body>
-</html>
+</ht

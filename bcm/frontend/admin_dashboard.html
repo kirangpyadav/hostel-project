@@ -342,6 +342,38 @@
             0% { transform: translateX(0%); }
             100% { transform: translateX(-100%); }
         }
+        /* This container ensures the button takes a new line */
+.back-button-wrapper {
+    width: 100%;
+    margin-top: 1.5rem; /* Adds some space above the button */
+    text-align: left; /* Aligns the button to the left */
+}
+
+.back-to-dashboard-btn {
+    padding: 10px 25px;
+    font-size: 1em;
+    font-weight: bold;
+    background-color: #6c757d; /* A neutral gray color */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: auto; /* Make the button only as wide as its text */
+}
+
+.back-to-dashboard-btn:hover {
+    background-color: #5a6268;
+}
+.full-width-action {
+    /* This makes the container span all columns in a grid layout */
+    grid-column: 1 / -1; 
+    
+    /* This aligns the button to the left inside the container */
+    text-align: right; 
+    
+    margin-top: 1.5rem; /* Adds some space above the button */
+}
     </style>
 </head>
 <body>
@@ -363,7 +395,7 @@
   </div>
 
   <div class="dashboard-card cooks" id="cookDetailsCard">
-    <i class="fas fa-hat-chef card-icon"></i>
+    <i class="fas fa-user-tie card-icon"></i>
     <h3>Cook Details</h3>
     <p>Access information about the hostel's cooking staff and their schedules.</p>
     <button class="card-button" id="manageChiefsBtn">Manage Chiefs</button>
@@ -390,7 +422,7 @@
     <i class="fas fa-user-plus card-icon"></i>
     <h3>Register Student</h3>
     <p>Add a new student to the hostel database with all required details.</p>
-    <button onclick="localStorage.removeItem('studentToUpdate'); window.location.href='student_register.html'">
+    <button onclick="localStorage.removeItem('studentToUpdate'); window.location.href='/admin_student/student_register.html'">
     Register Student
 </button>
 
@@ -400,21 +432,24 @@
     <i class="fas fa-user-edit card-icon"></i>
     <h3>Update Student</h3>
     <p>Edit existing student data such as name, SSP ID, attendance, etc.</p>
-     <button class="card-button" onclick="window.location.href='update-student.html'">Update</button>
+     <button class="card-button" onclick="window.location.href='/admin_student/update-student.html'">Update</button>
   </div>
 
   <div class="dashboard-card students">
     <i class="fas fa-users-cog card-icon"></i>
     <h3>Manage Students</h3>
     <p>View, filter, or delete student entries from the student list.</p>
-    <button class="card-button" onclick="window.location.href='manage-students.html'">Manage</button>
+    <button class="card-button" onclick="window.location.href='/admin_student/manage-students.html'">Manage</button>
   </div>
 
   <div class="dashboard-card students">
     <i class="fas fa-user-minus card-icon"></i>
     <h3>Delete Student</h3>
     <p>Permanently remove a student's record and all associated files.</p>
-    <button class="card-button" onclick="window.location.href='delete-student.html'">Delete</button>
+    <button class="card-button" onclick="window.location.href='/admin_student/delete-student.html'">Delete</button>
+</div>
+      <div class="full-width-action">
+    <button class="back-to-dashboard-btn" onclick="backToDashboard()">Back to Dashboard</button>
 </div>
 
 
@@ -423,28 +458,43 @@
 
 <!-- Chief Management Section -->
 <div class="dashboard-content" id="chiefManagementSection" style="display: none;">
-  <div class="dashboard-card cooks">
-    <i class="fas fa-user-plus card-icon"></i>
-    <h3>Register Chief</h3>
-    <p>Add a new chief/cook to the staff records.</p>
-    <button class="card-button" onclick="window.location.href='chief_register.html'">Register</button>
+    <div class="dashboard-card cooks">
+        <i class="fas fa-user-plus card-icon"></i>
+        <h3>Register Chief</h3>
+        <p>Add a new chief/cook to the staff records.</p>
+        <button class="card-button" onclick="window.location.href='/admin_chief/chief_register.html'">Register</button>
+    </div>
 
-  </div>
+    <!-- NEW: Update Chief Card -->
+    <div class="dashboard-card cooks">
+        <i class="fas fa-user-edit card-icon"></i>
+        <h3>Update Chief</h3>
+        <p>Edit an existing chief's details, such as their contact information.</p>
+      <button class="card-button" onclick="window.location.href='/admin_chief/update-chief.html'">Update</button>
+    </div>
 
- 
+    <!-- NEW: Delete Chief Card -->
+    <div class="dashboard-card cooks">
+        <i class="fas fa-user-minus card-icon"></i>
+        <h3>Delete Chief</h3>
+        <p>Remove a chief from the staff records permanently.</p>
+        <button class="card-button" onclick="window.location.href='/admin_chief/delete-chief.html'">Delete</button>
+    </div>
 
-  <div class="dashboard-card cooks">
-    <i class="fas fa-users-cog card-icon"></i>
-    <h3>Manage Chiefs</h3>
-    <p>View, assign tasks, or remove cooking staff from the database.</p>
-    <button class="card-button" onclick="window.location.href='manage_chiefs.html'">Manage</button>
-
-  </div>
-
-  <div style="text-align: center; width: 100%;">
-    <button class="logout-button" onclick="backToDashboard()">Back to Dashboard</button>
-  </div>
+    <div class="dashboard-card cooks">
+        <i class="fas fa-users-cog card-icon"></i>
+        <h3>Manage Chiefs</h3>
+        <p>View, assign tasks, or remove cooking staff from the database.</p>
+        <button class="card-button" onclick="window.location.href='/admin_chief/manage_chiefs.html'">Manage</button>
+    </div>
+       <div class="full-width-action">
+    <button class="back-to-dashboard-btn" onclick="backToDashboard()">Back to Dashboard</button>
 </div>
+</div>
+
+
+
+
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {

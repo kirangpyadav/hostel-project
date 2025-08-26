@@ -100,9 +100,27 @@
       display: none;
       font-size: 1.1em;
     }
+    .back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+    width: auto; /* Makes button fit its content */
+}
+.back-btn:hover {
+    color: #000;
+}
   </style>
 </head>
 <body>
+   <button class="back-btn" onclick="window.history.back()">&#8592;</button>
 
   <div class="form-section">
     <h2>Register Chief</h2>
@@ -178,44 +196,97 @@
   </div>
 
   <script>
-const form = document.getElementById('chiefForm');
-const successMsg = document.getElementById('successMsg');
+    const form = document.getElementById('chiefForm');
+    const successMsg = document.getElementById('successMsg');
+    let chiefIdToUpdate = null; // To track if we are updating
 
-form.addEventListener('submit', async function (e) {
-  e.preventDefault();
+    // --- NEW: Logic to populate the form for updates ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const chiefDataString = localStorage.getItem('chiefToUpdate');
 
-  const formData = new FormData(form);
-  const aadharFile = formData.get('aadharFile');
-  const photo = formData.get('photo');
+        if (chiefDataString) {
+            const chief = JSON.parse(chiefDataString);
+            chiefIdToUpdate = chief._id; // Store the ID for the update request
 
-  if (aadharFile && aadharFile.size > 200 * 1024) {
-    alert("Aadhar card file must be less than 200KB");
-    return;
-  }
+            // --- 1. Change UI to "Update Mode" ---
+            document.querySelector('h2').textContent = 'Update Chief Details';
+            form.querySelector('button[type="submit"]').textContent = 'Update Details';
 
-  if (photo && photo.size > 200 * 1024) {
-    alert("Photo must be less than 200KB");
-    return;
-  }
+            // --- 2. Remove 'required' from file inputs ---
+            form.querySelectorAll('input[type="file"]').forEach(input => {
+                input.removeAttribute('required');
+            });
 
-  const res = await fetch('/kitchen-chief/register', {
-    method: 'POST',
-    body: formData,
-  });
+            // --- 3. Populate all form fields ---
+            for (const key in chief) {
+                const field = form.querySelector(`[name="${key}"]`);
+                if (field) {
+                    if (field.type === 'file') {
+                        // For files, show the name of the existing file
+                        const existingFileName = chief[key];
+                        if (existingFileName) {
+                            let displayEl = field.parentElement.querySelector('.file-info');
+                            if (!displayEl) {
+                                displayEl = document.createElement('span');
+                                displayEl.className = 'file-info';
+                                displayEl.style.cssText = 'margin-left: 10px; font-size: 0.9em; color: #555;';
+                                field.insertAdjacentElement('afterend', displayEl);
+                            }
+                            displayEl.textContent = `Current: ${existingFileName}`;
+                        }
+                    } else {
+                        field.value = chief[key];
+                    }
+                }
+            }
+            
+            // Clean up the stored data
+            localStorage.removeItem('chiefToUpdate');
+        }
+    });
 
-  const data = await res.json();
+    // --- MODIFIED: Form Submission (Handles both Register and Update) ---
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
 
-  if (data.success) {
-    form.style.display = 'none';
-    
-  
-    successMsg.innerHTML = `Chief registered successfully!<br>Your Login ID is: <strong>${data.loginId}</strong>`;
-    successMsg.style.display = 'block';
-  } else {
-    alert("Something went wrong!");
-  }
-});
+        const formData = new FormData(form);
+        
+        let url = '/kitchen-chief/register';
+        let method = 'POST';
+
+        // If we are in update mode, change the URL and method
+        if (chiefIdToUpdate) {
+            url = `/kitchen-chief/update/${chiefIdToUpdate}`;
+            method = 'PUT'; // Use PUT for updates
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                form.style.display = 'none';
+                
+                if (chiefIdToUpdate) {
+                    successMsg.innerHTML = `Chief details updated successfully!`;
+                } else {
+                    successMsg.innerHTML = `Chief registered successfully!<br>Login ID is: <strong>${data.loginId}</strong>`;
+                }
+                successMsg.style.display = 'block';
+            } else {
+                alert(data.message || "Something went wrong!");
+            }
+        } catch (error) {
+            console.error("Submission error:", error);
+            alert("An error occurred. Please try again.");
+        }
+    });
 </script>
+
 
 
 </body>

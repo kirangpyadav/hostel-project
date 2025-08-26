@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Student</title>
+    <title>Delete Chief</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
@@ -17,18 +17,30 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
         }
         h2 {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             color: #333;
         }
-        .student-grid {
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        #searchBar {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .chief-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1.5rem;
         }
-        .student-card {
+        .chief-card {
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
@@ -36,7 +48,7 @@
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .student-photo {
+        .chief-photo {
             width: 100px;
             height: 100px;
             border-radius: 50%;
@@ -44,22 +56,21 @@
             margin-bottom: 1rem;
             border: 3px solid #eee;
         }
-        .student-card h3 {
+        .chief-card h3 {
             margin: 0.5rem 0;
             font-size: 1.1rem;
             color: #333;
         }
-        .student-card p {
-            margin: 0.25rem 0;
+        .chief-card p {
+            margin: 0.25rem 0 1rem 0;
             color: #666;
             font-size: 0.9rem;
         }
         .delete-btn {
-            margin-top: 1rem;
             padding: 0.6rem 1.5rem;
             border: none;
             border-radius: 20px;
-            background-color: #dc3545; /* Red for delete */
+            background-color: #dc3545;
             color: white;
             font-weight: 500;
             cursor: pointer;
@@ -76,9 +87,8 @@
             border-radius: 5px;
             text-align: center;
             margin: 1rem 0;
-            display: none; /* Hidden by default */
+            display: none;
         }
-        /* Confirmation Modal Styles */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -118,24 +128,46 @@
             color: white;
             border: 1px solid #6c757d;
         }
+        /* --- Back Button Style --- */
+.back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+    width: auto; /* Makes button fit its content */
+}
+.back-btn:hover {
+    color: #000;
+}
     </style>
 </head>
 <body>
-
+<button class="back-btn" onclick="window.history.back()">&#8592;</button>
     <div class="container">
-        <h2>Delete a Student Record</h2>
-        <div id="successMessage"></div>
-        <div id="studentGrid" class="student-grid">
-            <!-- Student cards will be inserted here -->
+        
+        <h2>Delete a Chief Record</h2>
+        <div class="search-container">
+            <input type="text" id="searchBar" placeholder="Search by name or Login ID...">
         </div>
-        <p id="loadingMessage">Loading student data...</p>
+        <div id="successMessage"></div>
+        <div id="chiefGrid" class="chief-grid">
+            <!-- Chief cards will be inserted here -->
+        </div>
+        <p id="loadingMessage">Loading chief data...</p>
     </div>
 
     <!-- Confirmation Modal -->
     <div id="deleteModal" class="modal-backdrop">
         <div class="modal-content">
             <h3>Are you sure?</h3>
-            <p>This will permanently delete the student and all their files. This action cannot be undone.</p>
+            <p>This will permanently delete the chief and all their files. This action cannot be undone.</p>
             <div class="modal-buttons">
                 <button id="cancelDeleteBtn">Cancel</button>
                 <button id="confirmDeleteBtn">Yes, Delete</button>
@@ -145,100 +177,106 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const studentGrid = document.getElementById('studentGrid');
+            const chiefGrid = document.getElementById('chiefGrid');
             const loadingMessage = document.getElementById('loadingMessage');
             const successMessage = document.getElementById('successMessage');
             const modal = document.getElementById('deleteModal');
             const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
             const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-            let studentToDelete = null;
+            const searchBar = document.getElementById('searchBar');
+            let chiefToDelete = null;
+            let allChiefs = [];
 
-            async function fetchAndDisplayStudents() {
-                studentGrid.innerHTML = ''; // Clear existing cards
-                loadingMessage.textContent = 'Loading student data...';
-                successMessage.style.display = 'none';
-
-                try {
-                    const response = await fetch('/api/students');
-                    if (!response.ok) throw new Error('Failed to fetch students.');
+            function renderChiefs(chiefsToDisplay) {
+                chiefGrid.innerHTML = '';
+                if (chiefsToDisplay.length === 0) {
+                    chiefGrid.innerHTML = '<p>No chiefs match your search.</p>';
+                    return;
+                }
+                chiefsToDisplay.forEach(chief => {
+                    const card = document.createElement('div');
+                    card.className = 'chief-card';
+                    card.id = `chief-${chief._id}`;
+                    const photoSrc = chief.photo ? `/uploads/${chief.photo}` : 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
                     
-                    const students = await response.json();
+                    card.innerHTML = `
+                        <img src="${photoSrc}" alt="Chief Photo" class="chief-photo">
+                        <h3>${chief.name}</h3>
+                        <p><strong>Login ID:</strong> ${chief.loginId}</p>
+                        <button class="delete-btn" data-id="${chief._id}" data-name="${chief.name}" data-loginid="${chief.loginId}">Delete</button>
+                    `;
+                    chiefGrid.appendChild(card);
+                });
+            }
+
+            async function fetchAndDisplayChiefs() {
+                loadingMessage.textContent = 'Loading chief data...';
+                successMessage.style.display = 'none';
+                try {
+                    const response = await fetch('/kitchen-chief/all');
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.message);
+                    
+                    allChiefs = data.chiefs;
                     loadingMessage.style.display = 'none';
-
-                    if (students.length === 0) {
-                        studentGrid.innerHTML = '<p>No students found.</p>';
-                        return;
-                    }
-
-                    students.forEach(student => {
-                        const card = document.createElement('div');
-                        card.className = 'student-card';
-                        card.id = `student-${student._id}`;
-                        const photoSrc = student.photo ? `/${student.photo}` : 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
-                        
-                        card.innerHTML = `
-                            <img src="${photoSrc}" alt="Student Photo" class="student-photo">
-                            <h3>${student.name}</h3>
-                            <p><strong>SSP ID:</strong> ${student.sspId}</p>
-                            <button class="delete-btn" data-id="${student._id}" data-name="${student.name}" data-ssp="${student.sspId}">Delete</button>
-                        `;
-                        studentGrid.appendChild(card);
-                    });
+                    renderChiefs(allChiefs);
                 } catch (error) {
-                    loadingMessage.textContent = 'Could not load student data.';
+                    loadingMessage.textContent = 'Could not load chief data.';
                     loadingMessage.style.color = 'red';
                 }
             }
 
-            // Handle click on a delete button
-            studentGrid.addEventListener('click', (event) => {
+            searchBar.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredChiefs = allChiefs.filter(chief => 
+                    chief.name.toLowerCase().includes(searchTerm) ||
+                    chief.loginId.includes(searchTerm)
+                );
+                renderChiefs(filteredChiefs);
+            });
+
+            chiefGrid.addEventListener('click', (event) => {
                 if (event.target.classList.contains('delete-btn')) {
-                    studentToDelete = {
+                    chiefToDelete = {
                         id: event.target.getAttribute('data-id'),
                         name: event.target.getAttribute('data-name'),
-                        sspId: event.target.getAttribute('data-ssp')
+                        loginId: event.target.getAttribute('data-loginid')
                     };
                     modal.style.display = 'flex';
                 }
             });
 
-            // Handle modal confirmation
             confirmDeleteBtn.addEventListener('click', async () => {
-                if (!studentToDelete) return;
-
+                if (!chiefToDelete) return;
                 try {
-                    const response = await fetch(`/api/students/delete/${studentToDelete.id}`, {
+                    const response = await fetch(`/kitchen-chief/delete/${chiefToDelete.id}`, {
                         method: 'DELETE'
                     });
-
                     const result = await response.json();
-
-                    if (response.ok) {
-                        // Remove the student card from the page
-                        const cardToRemove = document.getElementById(`student-${studentToDelete.id}`);
-                        if (cardToRemove) {
-                            cardToRemove.remove();
-                        }
+                    if (response.ok && result.success) {
+                        // Remove the chief from the 'allChiefs' array and re-render
+                        allChiefs = allChiefs.filter(c => c._id !== chiefToDelete.id);
+                        renderChiefs(allChiefs);
                         
-                        successMessage.textContent = `Student "${studentToDelete.name}" (SSP ID: ${studentToDelete.sspId}) was deleted successfully.`;
+                        successMessage.textContent = `Chief "${chiefToDelete.name}" (ID: ${chiefToDelete.loginId}) was deleted successfully.`;
                         successMessage.style.display = 'block';
                     } else {
-                        throw new Error(result.message || 'Failed to delete student.');
+                        throw new Error(result.message || 'Failed to delete chief.');
                     }
                 } catch (error) {
                     alert(`Error: ${error.message}`);
                 } finally {
                     modal.style.display = 'none';
-                    studentToDelete = null;
+                    chiefToDelete = null;
                 }
             });
 
             cancelDeleteBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
-                studentToDelete = null;
+                chiefToDelete = null;
             });
 
-            fetchAndDisplayStudents();
+            fetchAndDisplayChiefs();
         });
     </script>
 

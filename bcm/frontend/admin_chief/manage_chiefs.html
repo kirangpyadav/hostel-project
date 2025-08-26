@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Manage Chiefs</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fb;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .search-container {
+            margin-bottom: 2rem;
+        }
+        #searchBar {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .chief-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: left;
+        }
+        .chief-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            width: 220px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .chief-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .chief-card p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .chief-card button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .chief-card button:hover {
+            background-color: #0056b3;
+        }
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.2s;
+            padding: 0;
+            line-height: 1;
+            width: auto;
+        }
+        .back-btn:hover {
+            color: #000;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+        <h1>Manage Chiefs</h1>
+        <div class="search-container">
+            <input type="text" id="searchBar" placeholder="Search by name or Login ID...">
+        </div>
+        <div class="chief-grid" id="chiefList"></div>
+    </div>
+
+    <script>
+        const chiefListContainer = document.getElementById('chiefList');
+        const searchBar = document.getElementById('searchBar');
+        let allChiefs = []; // Store the full list for searching
+
+        function renderChiefs(chiefsToDisplay) {
+            chiefListContainer.innerHTML = '';
+            if (chiefsToDisplay.length === 0) {
+                chiefListContainer.innerHTML = '<p>No chiefs match your search.</p>';
+                return;
+            }
+            chiefsToDisplay.forEach(chief => {
+                const card = document.createElement('div');
+                card.className = 'chief-card';
+                card.innerHTML = `
+                    <img src="/uploads/${chief.photo}" alt="Chief Photo" onerror="this.onerror=null;this.src='https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';">
+                    <p><strong>ID:</strong> ${chief.loginId}</p>
+                    <p><strong>${chief.name}</strong></p>
+                    <button onclick="viewDetails('${chief._id}')">View Details</button>
+                `;
+                chiefListContainer.appendChild(card);
+            });
+        }
+
+        async function fetchChiefs() {
+            try {
+                const res = await fetch('/kitchen-chief/all');
+                const data = await res.json();
+                if (data.success) {
+                    allChiefs = data.chiefs;
+                    renderChiefs(allChiefs); // Display all chiefs initially
+                } else {
+                    alert('Failed to load chiefs');
+                }
+            } catch (err) {
+                console.error("Error fetching chiefs:", err);
+                chiefListContainer.innerHTML = '<p>Could not load chief data.</p>';
+            }
+        }
+
+        searchBar.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredChiefs = allChiefs.filter(chief => 
+                chief.name.toLowerCase().includes(searchTerm) ||
+                chief.loginId.includes(searchTerm)
+            );
+            renderChiefs(filteredChiefs);
+        });
+
+        function viewDetails(chiefId) {
+    localStorage.setItem('viewChiefId', chiefId);
+    window.location.href = 'chief-details.html';
+}
+fetchChiefs();
+
+        
+    </script>
+</body>
+</html>
