@@ -22,21 +22,21 @@ mongoose.connect(process.env.MONGO_URI, {
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ✅ Routes
-const authRoutes = require('./Routes/auth');
-const mealRoutes = require('./Routes/meals');
+
 const adminAuthRoutes = require('./Routes/adminAuth');
 const chiefAuthRoutes = require('./Routes/chiefauth');
 const kitchenChiefRoute = require('./Routes/kitchenChiefRoute');
 const studentRoutes = require('./Routes/studentRoutes');
 const rationRoutes = require('./Routes/rationRoutes'); 
+const studentAuthRoutes = require('./Routes/studentAuthRoutes');
 
-app.use('/api/auth', authRoutes);
-app.use('/api/meals', mealRoutes);
+
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/chief', chiefAuthRoutes);
 app.use('/kitchen-chief', kitchenChiefRoute);
 app.use('/api/students', studentRoutes);
-app.use('/api/rations', rationRoutes); 
+app.use('/api/rations', rationRoutes);
+app.use('/api/student-auth', studentAuthRoutes); 
 
 
 // ✅ Serve Static Files (for plain frontend)

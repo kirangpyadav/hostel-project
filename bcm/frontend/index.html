@@ -188,19 +188,23 @@
                 "BCWD-1435": "Anekal"
             };
 
-            verificationForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const hostelName = document.getElementById('hostelName').value;
-                const hostelCode = document.getElementById('hostelCode').value;
 
-                if (validHostels[hostelCode] && validHostels[hostelCode] === hostelName) {
-                    verificationError.textContent = '';
-                    verificationContainer.style.display = 'none';
-                    loginOptionsContainer.style.display = 'block';
-                } else {
-                    verificationError.textContent = 'Invalid Hostel Name or Code. Please try again.';
-                }
-            });
+verificationForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const hostelName = document.getElementById('hostelName').value;
+    const hostelCode = document.getElementById('hostelCode').value;
+
+    if (validHostels[hostelCode] && validHostels[hostelCode] === hostelName) {
+        // Store the selected hostel info for the next page to use
+        localStorage.setItem('selectedHostelName', hostelName);
+        localStorage.setItem('selectedHostelCode', hostelCode);
+
+        // Redirect to the new home page
+        window.location.href = 'hostel-home.html';
+    } else {
+        verificationError.textContent = 'Invalid Hostel Name or Code. Please try again.';
+    }
+});
 
             document.getElementById('studentLoginBtn').addEventListener('click', () => {
                 window.location.href = 'student-login.html';

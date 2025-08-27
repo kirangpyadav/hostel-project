@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-wrapper {
+            width: 100%;
+            max-width: 450px;
+        }
+        .form-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input, button {
+            width: 100%;
+            padding: 0.8rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+        .submit-btn {
+            background-color: #007bff;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .toggle-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .toggle-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .message {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .message.success {
+            color: #155724;
+        }
+        .message.error {
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-wrapper">
+        <!-- Login Form -->
+        <div id="loginContainer" class="form-container">
+            <h2>Student Login</h2>
+            <form id="loginForm">
+                <div class="form-group"><label for="loginSspId">SSP ID</label><input type="text" id="loginSspId" required></div>
+                <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required></div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <p id="loginMessage" class="message"></p>
+            <div class="toggle-link">
+                <a id="showRegister">New student? Register here</a> | <a id="showForgotPassword">Forgot Password?</a>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerContainer" class="form-container" style="display: none;">
+            <h2>Student Registration</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: -1rem; margin-bottom: 1.5rem;">Enter the exact details provided to the hostel admin to create your account.</p>
+            <form id="registerForm">
+                <div class="form-group"><label for="regName">Full Name</label><input type="text" id="regName" required></div>
+                <div class="form-group"><label for="regSspId">SSP ID</label><input type="text" id="regSspId" required></div>
+                <div class="form-group"><label for="regAadhar">Aadhar Number</label><input type="text" id="regAadhar" required></div>
+                <div class="form-group"><label for="regDob">Date of Birth</label><input type="date" id="regDob" required></div>
+                <div class="form-group"><label for="regPhone">Mobile Number</label><input type="tel" id="regPhone" required></div>
+                <div class="form-group"><label for="regPassword">Create Password</label><input type="password" id="regPassword" required></div>
+                <div class="form-group"><label for="regConfirmPassword">Confirm Password</label><input type="password" id="regConfirmPassword" required></div>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+            <p id="registerMessage" class="message"></p>
+            <div class="toggle-link"><a id="showLoginFromRegister">Already have an account? Login</a></div>
+        </div>
+
+        <!-- Forgot Password - Step 1: Verification -->
+        <div id="forgotContainer" class="form-container" style="display: none;">
+            <h2>Forgot Password</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: -1rem; margin-bottom: 1.5rem;">Enter your details to verify your identity.</p>
+            <form id="forgotForm">
+                <div class="form-group"><label for="fpName">Full Name</label><input type="text" id="fpName" required></div>
+                <div class="form-group"><label for="fpSspId">SSP ID</label><input type="text" id="fpSspId" required></div>
+                <div class="form-group"><label for="fpAadhar">Aadhar Number</label><input type="text" id="fpAadhar" required></div>
+                <div class="form-group"><label for="fpDob">Date of Birth</label><input type="date" id="fpDob" required></div>
+                <div class="form-group"><label for="fpPhone">Mobile Number</label><input type="tel" id="fpPhone" required></div>
+                <button type="submit" class="submit-btn">Send OTP</button>
+            </form>
+            <p id="forgotMessage" class="message"></p>
+            <div class="toggle-link"><a id="showLoginFromForgot">Back to Login</a></div>
+        </div>
+
+        <!-- Forgot Password - Step 2: OTP Entry -->
+        <div id="otpContainer" class="form-container" style="display: none;">
+            <h2>Verify OTP</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: -1rem; margin-bottom: 1.5rem;">An OTP has been sent. Please enter it below.</p>
+            <form id="otpForm">
+                <div class="form-group"><label for="otpInput">Enter 6-Digit OTP</label><input type="text" id="otpInput" required></div>
+                <button type="submit" class="submit-btn">Verify OTP</button>
+            </form>
+            <p id="otpMessage" class="message"></p>
+            <div class="toggle-link">
+            <a id="resendOtpLink" style="display: none;">Resend OTP</a>
+           </div>
+        </div>
+
+        <!-- NEW: Forgot Password - Step 3: Reset Password -->
+        <div id="resetContainer" class="form-container" style="display: none;">
+            <h2>Reset Password</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: -1rem; margin-bottom: 1.5rem;">Your OTP was verified. Please set a new password.</p>
+            <form id="resetForm">
+                <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" required></div>
+                <div class="form-group"><label for="confirmNewPassword">Confirm New Password</label><input type="password" id="confirmNewPassword" required></div>
+                <button type="submit" class="submit-btn">Set New Password</button>
+            </form>
+            <p id="resetMessage" class="message"></p>
+        </div>
+    </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginContainer = document.getElementById('loginContainer');
+        const registerContainer = document.getElementById('registerContainer');
+        const forgotContainer = document.getElementById('forgotContainer');
+        const otpContainer = document.getElementById('otpContainer');
+        const resetContainer = document.getElementById('resetContainer');
+
+        const showRegisterLink = document.getElementById('showRegister');
+        const showLoginFromRegister = document.getElementById('showLoginFromRegister');
+        const showForgotPassword = document.getElementById('showForgotPassword');
+        const showLoginFromForgot = document.getElementById('showLoginFromForgot');
+        
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const forgotForm = document.getElementById('forgotForm');
+        const otpForm = document.getElementById('otpForm');
+        const resetForm = document.getElementById('resetForm');
+        
+        const loginMessage = document.getElementById('loginMessage');
+        const registerMessage = document.getElementById('registerMessage');
+        const forgotMessage = document.getElementById('forgotMessage');
+        const otpMessage = document.getElementById('otpMessage');
+        const resetMessage = document.getElementById('resetMessage');
+        const resendOtpLink = document.getElementById('resendOtpLink'); // Get the new link
+
+        // --- View Toggling ---
+        showRegister.addEventListener('click', () => { loginContainer.style.display = 'none'; registerContainer.style.display = 'block'; });
+        showLoginFromRegister.addEventListener('click', () => { registerContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+        showForgotPassword.addEventListener('click', () => { loginContainer.style.display = 'none'; forgotContainer.style.display = 'block'; });
+        showLoginFromForgot.addEventListener('click', () => { forgotContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+
+        // --- Registration and Login Handlers (Unchanged) ---
+        registerForm.addEventListener('submit', async (e) => { /* ... (Your existing code) ... */ });
+        loginForm.addEventListener('submit', async (e) => { /* ... (Your existing code) ... */ });
+
+        // ===================================================================
+        // NEW: Resend OTP Timer Functionality
+        // ===================================================================
+        function startResendTimer() {
+            let seconds = 30;
+            resendOtpLink.style.display = 'inline';
+            resendOtpLink.style.pointerEvents = 'none';
+            resendOtpLink.style.color = '#6c757d';
+
+            const timer = setInterval(() => {
+                seconds--;
+                resendOtpLink.textContent = `Resend OTP in ${seconds}s`;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    resendOtpLink.textContent = 'Resend OTP';
+                    resendOtpLink.style.pointerEvents = 'auto';
+                    resendOtpLink.style.color = '#007bff';
+                }
+            }, 1000);
+        }
+
+        resendOtpLink.addEventListener('click', async () => {
+            // Reuse the details from the first form to resend the OTP
+            const name = document.getElementById('fpName').value;
+            const sspId = document.getElementById('fpSspId').value;
+            const aadharNumber = document.getElementById('fpAadhar').value;
+            const dob = document.getElementById('fpDob').value;
+            const phone = document.getElementById('fpPhone').value;
+
+            try {
+                const response = await fetch('/api/student-auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, sspId, aadharNumber, dob, phone })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                
+                alert(`A new OTP has been sent!`);
+                startResendTimer(); // Restart the timer
+            } catch (error) {
+                otpMessage.textContent = error.message;
+                otpMessage.className = 'message error';
+            }
+        });
+
+        // --- Forgot Password - Step 1: Verification & Send OTP ---
+        forgotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            forgotMessage.textContent = 'Verifying...';
+            const name = document.getElementById('fpName').value;
+            const sspId = document.getElementById('fpSspId').value;
+            const aadharNumber = document.getElementById('fpAadhar').value;
+            const dob = document.getElementById('fpDob').value;
+            const phone = document.getElementById('fpPhone').value;
+
+            try {
+                const response = await fetch('/api/student-auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, sspId, aadharNumber, dob, phone })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                
+                alert(result.message);
+                forgotContainer.style.display = 'none';
+                otpContainer.style.display = 'block';
+                startResendTimer(); // Start the timer for the first time
+            } catch (error) {
+                forgotMessage.textContent = error.message;
+                forgotMessage.className = 'message error';
+            }
+        });
+
+        // --- Forgot Password - Step 2: Verify OTP ---
+        otpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            otpMessage.textContent = 'Verifying OTP...';
+            const sspId = document.getElementById('fpSspId').value;
+            const otp = document.getElementById('otpInput').value;
+
+            try {
+                const response = await fetch('/api/student-auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sspId, otp })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+
+                otpContainer.style.display = 'none';
+                resetContainer.style.display = 'block';
+            } catch (error) {
+                otpMessage.textContent = error.message;
+                otpMessage.className = 'message error';
+            }
+        });
+        
+        // --- Forgot Password - Step 3: Set New Password ---
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resetMessage.textContent = '';
+            const sspId = document.getElementById('fpSspId').value;
+            const otp = document.getElementById('otpInput').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                resetMessage.textContent = 'Passwords do not match.';
+                resetMessage.className = 'message error';
+                return;
+            }
+            if (newPassword.length < 6) {
+                resetMessage.textContent = 'Password must be at least 6 characters.';
+                resetMessage.className = 'message error';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/student-auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sspId, otp, newPassword })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+
+                resetContainer.innerHTML = `
+                    <h2>Success!</h2>
+                    <p class="message success">${result.message}</p>
+                    <div class="toggle-link"><a id="finalBackToLogin">Back to Login</a></div>
+                `;
+                document.getElementById('finalBackToLogin').addEventListener('click', () => {
+                    window.location.reload();
+                });
+            } catch (error) {
+                resetMessage.textContent = error.message;
+                resetMessage.className = 'message error';
+            }
+        });
+        
+        // --- Paste your unchanged login/register functions back in here ---
+        registerForm.addEventListener('submit', async (e) => { e.preventDefault(); registerMessage.textContent = ''; const name = document.getElementById('regName').value; const sspId = document.getElementById('regSspId').value; const aadharNumber = document.getElementById('regAadhar').value; const dob = document.getElementById('regDob').value; const phone = document.getElementById('regPhone').value; const password = document.getElementById('regPassword').value; const confirmPassword = document.getElementById('regConfirmPassword').value; if (password !== confirmPassword) { registerMessage.textContent = 'Passwords do not match.'; registerMessage.className = 'message error'; return; } try { const response = await fetch('/api/student-auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, sspId, aadharNumber, dob, phone, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); registerMessage.textContent = result.message; registerMessage.className = 'message success'; registerForm.reset(); } catch (error) { registerMessage.textContent = error.message; registerMessage.className = 'message error'; } });
+        loginForm.addEventListener('submit', async (e) => { e.preventDefault(); loginMessage.textContent = ''; const sspId = document.getElementById('loginSspId').value; const password = document.getElementById('loginPassword').value; try { const response = await fetch('/api/student-auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sspId, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); localStorage.setItem('studentName', result.student.name); localStorage.setItem('sspId', result.student.sspId); window.location.href = 'student_dashboard.html'; } catch (error) { loginMessage.textContent = error.message; loginMessage.className = 'message error'; } });
+    });
+</script>
+
+
+
+</body>
+</html>
