@@ -88,11 +88,31 @@
         .message.error {
             color: #721c24;
         }
+         .back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+    width: auto; /* Makes button fit its content */
+}
+.back-btn:hover {
+    color: #000;
+}
     </style>
 </head>
 <body>
+    
+
 
     <div class="form-wrapper">
+        <button class="back-btn" onclick="window.history.back()">&#8592;</button>
         <!-- Login Form -->
         <div id="loginContainer" class="form-container">
             <h2>Student Login</h2>

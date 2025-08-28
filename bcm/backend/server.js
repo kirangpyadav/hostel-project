@@ -23,20 +23,23 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // ✅ Routes
 
-const adminAuthRoutes = require('./Routes/adminAuth');
-const chiefAuthRoutes = require('./Routes/chiefauth');
+
+
 const kitchenChiefRoute = require('./Routes/kitchenChiefRoute');
 const studentRoutes = require('./Routes/studentRoutes');
 const rationRoutes = require('./Routes/rationRoutes'); 
 const studentAuthRoutes = require('./Routes/studentAuthRoutes');
+const chiefAuthRoutes = require('./Routes/chiefAuthRoutes');
 
 
-app.use('/api/admin', adminAuthRoutes);
-app.use('/api/chief', chiefAuthRoutes);
+
 app.use('/kitchen-chief', kitchenChiefRoute);
 app.use('/api/students', studentRoutes);
 app.use('/api/rations', rationRoutes);
 app.use('/api/student-auth', studentAuthRoutes); 
+app.use('/api/chief-auth', chiefAuthRoutes);
+
+
 
 
 // ✅ Serve Static Files (for plain frontend)

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chief Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-wrapper {
+            width: 100%;
+            max-width: 450px;
+        }
+        .form-container {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input, button {
+            width: 100%;
+            padding: 0.8rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+        .submit-btn {
+            background-color: #007bff;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .toggle-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .toggle-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .message {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .message.success {
+            color: #155724;
+        }
+        .message.error {
+            color: #721c24;
+        }
+         .back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.2s;
+    padding: 0;
+    line-height: 1;
+    width: auto; /* Makes button fit its content */
+}
+.back-btn:hover {
+    color: #000;
+}
+    </style>
+</head>
+<body>
+    
+
+    <div class="form-wrapper">
+        <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+        <!-- Login Form -->
+        <div id="loginContainer" class="form-container">
+            <h2>Chief Login</h2>
+            <form id="loginForm">
+                <div class="form-group"><label for="loginId">Login ID</label><input type="text" id="loginId" required></div>
+                <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" required></div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <p id="loginMessage" class="message"></p>
+            <div class="toggle-link">
+                <a id="showRegister">New chief? Register here</a> | <a id="showForgotPassword">Forgot Password?</a>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerContainer" class="form-container" style="display: none;">
+            <h2>Chief Registration</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #666;">Enter your details exactly as provided by the admin.</p>
+            <form id="registerForm">
+                <div class="form-group"><label for="regName">Full Name</label><input type="text" id="regName" required></div>
+                <div class="form-group"><label for="regLoginId">Login ID</label><input type="text" id="regLoginId" required></div>
+                <div class="form-group"><label for="regMobile">Mobile Number</label><input type="tel" id="regMobile" required></div>
+                <div class="form-group"><label for="regAadhar">Aadhar Number</label><input type="text" id="regAadhar" required></div>
+                <div class="form-group"><label for="regPassword">Create Password</label><input type="password" id="regPassword" required></div>
+                <div class="form-group"><label for="regConfirmPassword">Confirm Password</label><input type="password" id="regConfirmPassword" required></div>
+                <button type="submit" class="submit-btn">Register</button>
+            </form>
+            <p id="registerMessage" class="message"></p>
+            <div class="toggle-link"><a id="showLoginFromRegister">Already registered? Login</a></div>
+        </div>
+
+        <!-- Forgot Password - Step 1: Verification -->
+        <div id="forgotContainer" class="form-container" style="display: none;">
+            <h2>Forgot Password</h2>
+            <form id="forgotForm">
+                <div class="form-group"><label for="fpName">Full Name</label><input type="text" id="fpName" required></div>
+                <div class="form-group"><label for="fpLoginId">Login ID</label><input type="text" id="fpLoginId" required></div>
+                <div class="form-group"><label for="fpMobile">Mobile Number</label><input type="tel" id="fpMobile" required></div>
+                <div class="form-group"><label for="fpAadhar">Aadhar Number</label><input type="text" id="fpAadhar" required></div>
+                <button type="submit" class="submit-btn">Send OTP</button>
+            </form>
+            <p id="forgotMessage" class="message"></p>
+            <div class="toggle-link"><a id="showLoginFromForgot">Back to Login</a></div>
+        </div>
+
+        <!-- Forgot Password - Step 2: OTP Entry -->
+        <div id="otpContainer" class="form-container" style="display: none;">
+            <h2>Verify OTP</h2>
+            <p>An OTP has been sent to your mobile number.</p>
+            <form id="otpForm">
+                <div class="form-group"><label for="otpInput">Enter 6-Digit OTP</label><input type="text" id="otpInput" required></div>
+                <button type="submit" class="submit-btn">Verify OTP</button>
+            </form>
+            <p id="otpMessage" class="message"></p>
+            <div class="toggle-link"><a id="resendOtpLink" style="display: none;">Resend OTP</a></div>
+        </div>
+
+        <!-- Forgot Password - Step 3: Reset Password -->
+        <div id="resetContainer" class="form-container" style="display: none;">
+            <h2>Reset Password</h2>
+            <form id="resetForm">
+                <div class="form-group"><label for="newPassword">New Password</label><input type="password" id="newPassword" required></div>
+                <div class="form-group"><label for="confirmNewPassword">Confirm New Password</label><input type="password" id="confirmNewPassword" required></div>
+                <button type="submit" class="submit-btn">Set New Password</button>
+            </form>
+            <p id="resetMessage" class="message"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginContainer = document.getElementById('loginContainer');
+            const registerContainer = document.getElementById('registerContainer');
+            const forgotContainer = document.getElementById('forgotContainer');
+            const otpContainer = document.getElementById('otpContainer');
+            const resetContainer = document.getElementById('resetContainer');
+
+            // --- View Toggling Links ---
+            document.getElementById('showRegister').addEventListener('click', () => { loginContainer.style.display = 'none'; registerContainer.style.display = 'block'; });
+            document.getElementById('showLoginFromRegister').addEventListener('click', () => { registerContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+            document.getElementById('showForgotPassword').addEventListener('click', () => { loginContainer.style.display = 'none'; forgotContainer.style.display = 'block'; });
+            document.getElementById('showLoginFromForgot').addEventListener('click', () => { forgotContainer.style.display = 'none'; loginContainer.style.display = 'block'; });
+
+            // --- Form Handlers ---
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const forgotForm = document.getElementById('forgotForm');
+            const otpForm = document.getElementById('otpForm');
+            const resetForm = document.getElementById('resetForm');
+            
+            const loginMessage = document.getElementById('loginMessage');
+            const registerMessage = document.getElementById('registerMessage');
+            const forgotMessage = document.getElementById('forgotMessage');
+            const otpMessage = document.getElementById('otpMessage');
+            const resetMessage = document.getElementById('resetMessage');
+            const resendOtpLink = document.getElementById('resendOtpLink');
+
+            // --- Registration Handler ---
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                registerMessage.textContent = '';
+                const name = document.getElementById('regName').value;
+                const loginId = document.getElementById('regLoginId').value;
+                const mobile = document.getElementById('regMobile').value;
+                const aadhar = document.getElementById('regAadhar').value;
+                const password = document.getElementById('regPassword').value;
+                const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    registerMessage.textContent = 'Passwords do not match.';
+                    registerMessage.className = 'message error';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/chief-auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, loginId, mobile, aadhar, password })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    registerMessage.textContent = result.message;
+                    registerMessage.className = 'message success';
+                    registerForm.reset();
+                } catch (error) {
+                    registerMessage.textContent = error.message;
+                    registerMessage.className = 'message error';
+                }
+            });
+
+            // --- Login Handler ---
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginMessage.textContent = '';
+                const loginId = document.getElementById('loginId').value;
+                const password = document.getElementById('loginPassword').value;
+                try {
+                    const response = await fetch('/api/chief-auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ loginId, password })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    localStorage.setItem('chiefName', result.chief.name);
+                    localStorage.setItem('chiefLoginId', result.chief.loginId);
+                    window.location.href = 'chief_dashboard.html';
+                } catch (error) {
+                    loginMessage.textContent = error.message;
+                    loginMessage.className = 'message error';
+                }
+            });
+
+            // --- Forgot Password Flow ---
+            function startResendTimer() {
+                let seconds = 30;
+                resendOtpLink.style.display = 'inline';
+                resendOtpLink.style.pointerEvents = 'none';
+                resendOtpLink.style.color = '#6c757d';
+                const timer = setInterval(() => {
+                    seconds--;
+                    resendOtpLink.textContent = `Resend OTP in ${seconds}s`;
+                    if (seconds <= 0) {
+                        clearInterval(timer);
+                        resendOtpLink.textContent = 'Resend OTP';
+                        resendOtpLink.style.pointerEvents = 'auto';
+                        resendOtpLink.style.color = '#007bff';
+                    }
+                }, 1000);
+            }
+
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                forgotMessage.textContent = 'Verifying...';
+                const name = document.getElementById('fpName').value;
+                const loginId = document.getElementById('fpLoginId').value;
+                const mobile = document.getElementById('fpMobile').value;
+                const aadhar = document.getElementById('fpAadhar').value;
+                try {
+                    const response = await fetch('/api/chief-auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, loginId, mobile, aadhar })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    alert(result.message);
+                    forgotContainer.style.display = 'none';
+                    otpContainer.style.display = 'block';
+                    startResendTimer();
+                } catch (error) {
+                    forgotMessage.textContent = error.message;
+                    forgotMessage.className = 'message error';
+                }
+            });
+
+            otpForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                otpMessage.textContent = 'Verifying OTP...';
+                const loginId = document.getElementById('fpLoginId').value;
+                const otp = document.getElementById('otpInput').value;
+                try {
+                    const response = await fetch('/api/chief-auth/verify-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ loginId, otp })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    otpContainer.style.display = 'none';
+                    resetContainer.style.display = 'block';
+                } catch (error) {
+                    otpMessage.textContent = error.message;
+                    otpMessage.className = 'message error';
+                }
+            });
+
+            resetForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resetMessage.textContent = '';
+                const loginId = document.getElementById('fpLoginId').value;
+                const otp = document.getElementById('otpInput').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+                if (newPassword !== confirmNewPassword) {
+                    resetMessage.textContent = 'Passwords do not match.';
+                    resetMessage.className = 'message error';
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/chief-auth/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ loginId, otp, newPassword })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    resetContainer.innerHTML = `<h2>Success!</h2><p class="message success">${result.message}</p><div class="toggle-link"><a id="finalBackToLogin">Back to Login</a></div>`;
+                    document.getElementById('finalBackToLogin').addEventListener('click', () => { window.location.reload(); });
+                } catch (error) {
+                    resetMessage.textContent = error.message;
+                    resetMessage.className = 'message error';
+                }
+            });
+
+            resendOtpLink.addEventListener('click', async () => {
+                const name = document.getElementById('fpName').value;
+                const loginId = document.getElementById('fpLoginId').value;
+                const mobile = document.getElementById('fpMobile').value;
+                const aadhar = document.getElementById('fpAadhar').value;
+                try {
+                    const response = await fetch('/api/chief-auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, loginId, mobile, aadhar })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    alert('A new OTP has been sent!');
+                    startResendTimer();
+                } catch (error) {
+                    otpMessage.textContent = error.message;
+                    otpMessage.className = 'message error';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
