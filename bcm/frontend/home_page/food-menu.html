@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCM Hostel Food Menu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiro+Kannada&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', 'Tiro Kannada', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: #000; }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .menu-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .menu-table th, .menu-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .menu-table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+        .menu-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .menu-table tbody td {
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .menu-table tbody td:hover {
+            background-color: #e2e6ea;
+            color: #0056b3;
+        }
+        .day-column {
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background-color: #fff;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem; right: 1.5rem;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+        #modalImage {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        .modal-details-wrapper {
+            padding: 2rem;
+        }
+        #modalTitle {
+            font-size: 1.8rem;
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+        .meal-details p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0.5rem 0;
+        }
+        .meal-details strong {
+            color: #333;
+        }
+        .meal-time {
+            font-weight: 600;
+            color: #28a745;
+        }
+        /* Styles for Day View Modal */
+        .day-view-meal {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        .day-view-meal:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .day-view-meal h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+        }
+        .breakfast-title { color: #F39C12; }
+        .lunch-title { color: #2ECC71; }
+        .evening-title { color: #e67e22; } /* New color for evening */
+        .dinner-title { color: #3498DB; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button class="back-btn" onclick="window.history.back()">&#8592;</button>
+        <h1>ವಾರದ ಊಟದ ಪಟ್ಟಿ</h1>
+        <table class="menu-table" id="mainMenuTable">
+            <thead>
+                <tr>
+                    <th>ವಾರಗಳು</th>
+                    <th>ಬೆಳಗಿನ ತಿಂಡಿ</th>
+                    <th>ಮಧ್ಯಾಹ್ನ ಊಟ</th>
+                    <th>ಸಂಜೆ </th>
+                    <th>ರಾತ್ರಿ ಊಟ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here by JavaScript -->
+            </tbody>
+        </table>
+
+        <h2>ಸಿಹಿ ತಿಂಡಿಗಳು (ಶುಕ್ರವಾರ ರಾತ್ರಿ ಊಟದೊಂದಿಗೆ)</h2>
+        <table class="menu-table" id="sweetsMenuTable">
+             <thead>
+                <tr>
+                    <th>ವಾರ</th>
+                    <th>ವಿವರ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Sweets will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <img id="modalImage" src="" alt="Meal Photo">
+            <div class="modal-details-wrapper">
+                <h2 id="modalTitle"></h2>
+                <div id="modalDetails" class="meal-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuData = [
+            { day: 'ಸೋಮವಾರ', breakfast: { name: 'ಚೌಚೋಬಾತ್,ಕಾಫಿ/ಟೀ,', en_name: 'Chowchowbath & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ಅನ್ನ, ಕಾಳು ಸಾರು, , ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Rice, Legume Curry, Veggies, Buttermilk ,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ಪಲ್ಯ, ಅನ್ನ, ಸಾರು, ಹಾಲು', en_name: 'Chapathi, Veggies, Rice, Sambar, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಮಂಗಳವಾರ', breakfast: { name: 'ಪಲಾವ್, ಮೊಸರು ಬಜ್ಜಿ,ಕಾಫಿ/ಟೀ', en_name: 'Pulao & Raita & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ಅನ್ನ, ಬಸ್ಸಾರು, ಪಲ್ಯ, ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Rice, Bassaru, Veggies, Buttermilk,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ತೊಗರಿ ಬೇಳೆ ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಹಾಲು', en_name: 'Chapathi, Toor Dal Sambar, Rice, Veggies, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಬುಧವಾರ', breakfast: { name: 'ಇಡ್ಲಿ, ಸಾಂಬಾರು,ಕಾಫಿ/ಟೀ', en_name: 'Idli & Sambar & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ಅನ್ನ, ಹುರುಳಿ ಕಾಳು ಸಾರು, ಪಲ್ಯ, ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Rice, Horse Gram Curry, Veggies, Buttermilk,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ಹೆಸರು ಬೇಳೆ ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಹಾಲು', en_name: 'Chapathi, Moong Dal Sambar, Rice, Veggies, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಗುರುವಾರ', breakfast: { name: 'ಟೊಮೆಟೊ ಬಾತ್,ಕಾಫಿ/ಟೀ', en_name: 'Tomato Bath & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ತೊಗರಿ ಬೇಳೆ ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Toor Dal Sambar, Rice, Veggies, Buttermilk,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ಕಾಳು ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಹಾಲು', en_name: 'Chapathi, Legume Curry, Rice, Veggies, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಶುಕ್ರವಾರ', breakfast: { name: 'ಪುಳಿಯೋಗರೆ,ಕಾಫಿ/ಟೀ', en_name: 'Puliyogare & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ಅನ್ನ, ಹುಳಿ ಸಾರು, ಪಲ್ಯ, ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Rice, Tamarind Sambar, Veggies, Buttermilk,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ಮೊಟ್ಟೆ ಸಾರು/ಬೇಳೆ ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಹಾಲು, ಸಿಹಿ ತಿಂಡಿ', en_name: 'Chapathi, Egg Curry/Dal, Rice, Veggies, Milk & Sweet', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಶನಿವಾರ', breakfast: { name: 'ಅವಲಕ್ಕಿ, ಚಿತ್ರಾನ್ನ/ಚಿತ್ರಾನ್ನ,ಕಾಫಿ/ಟೀ', en_name: 'Avalakki, Chitranna/chitranna & Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಮುದ್ದೆ, ಕಡಲೆ ಕಾಳು ಸಾರು, ಅನ್ನ, ಪಲ್ಯ, ಮಜ್ಜಿಗೆ,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Ragi Mudde, Chickpea Curry, Rice, Veggies, Buttermilk,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಚಪಾತಿ, ಮೊಸರನ್ನ, ಉಪ್ಪಿನಕಾಯಿ, ಅನ್ನ, ಸಾರು, ಹಾಲು', en_name: 'Chapathi, Curd Rice, Pickle, Rice, Sambar, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } },
+            { day: 'ಭಾನುವಾರ', breakfast: { name: 'ದೋಸೆ, ಚಟ್ನಿ,ಆಲೂಗಡ್ಡೆ ಪಲ್ಯ,ಕಾಫಿ/ಟೀ', en_name: 'Dosa & Chutney &aloogadde palya &Coffee/Tea', time: '7:00 AM - 9:00 AM', image: 'https://placehold.co/600x400/F39C12/FFFFFF?text=Breakfast' }, lunch: { name: 'ಅನ್ನ, ಮಾಂಸದ ಸಾರು (ಕೋಳಿ), ಬಾಳೆಹಣ್ಣು,ಉಪ್ಪಿನಕಾಯಿ', en_name: 'Rice, Chicken Curry, Banana,pickle', time: '12:45 PM - 2:30 PM', image: 'https://placehold.co/600x400/2ECC71/FFFFFF?text=Lunch' }, evening: { name: 'ಕಾಫಿ/ಟೀ', en_name: 'Coffee/Tea', time: '5:00 PM - 6:00 PM', image: 'https://placehold.co/600x400/e67e22/FFFFFF?text=Snacks' }, dinner: { name: 'ಮುದ್ದೆ, ಅನ್ನ, ಬೇಳೆ ಸಾರು, ಪಲ್ಯ, ಹಾಲು', en_name: 'Ragi Mudde, Rice, Dal Sambar, Veggies, Milk', time: '7:30 PM - 9:00 PM', image: 'https://placehold.co/600x400/3498DB/FFFFFF?text=Dinner' } }
+        ];
+
+        const sweetsData = [
+            { week: '1 ನೇ ಶುಕ್ರವಾರ', name: 'ಕ್ಯಾರೇಟ್ ಹಲ್ವಾ', en_name: 'Carrot Halwa' },
+            { week: '2 ನೇ ಶುಕ್ರವಾರ', name: 'ಶಾವಿಗೆ ಪಾಯಸ', en_name: 'Shavige Payasa' },
+            { week: '3 ನೇ ಶುಕ್ರವಾರ', name: 'ಹೋಳಿಗೆ', en_name: 'Holige' },
+            { week: '4 ನೇ ಶುಕ್ರವಾರ', name: 'ಗುಲಾಬ್ ಜಾಮೂನ್', en_name: 'Gulab Jamun' },
+            { week: '5 ನೇ ಶುಕ್ರವಾರ', name: 'ಗೋಧಿ ಹುಗ್ಗಿ', en_name: 'Godhi Huggi (Wheat Kheer)' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainMenuTableBody = document.querySelector('#mainMenuTable tbody');
+            const sweetsMenuTableBody = document.querySelector('#sweetsMenuTable tbody');
+            const modal = document.getElementById('detailsModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalImage = document.getElementById('modalImage');
+            const modalDetails = document.getElementById('modalDetails');
+            const closeBtn = document.querySelector('.close-btn');
+
+            menuData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="day-column">${item.day}</td>
+                    <td data-meal="breakfast">${item.breakfast.name}</td>
+                    <td data-meal="lunch">${item.lunch.name}</td>
+                    <td data-meal="evening">${item.evening.name}</td>
+                    <td data-meal="dinner">${item.dinner.name}</td>
+                `;
+                mainMenuTableBody.appendChild(row);
+            });
+
+            sweetsData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="day-column">${item.week}</td><td data-sweet-name="${item.name}">${item.name}</td>`;
+                sweetsMenuTableBody.appendChild(row);
+            });
+
+            mainMenuTableBody.addEventListener('click', (event) => {
+                const target = event.target;
+                const dayRow = target.parentElement;
+                const dayName = dayRow.querySelector('.day-column').textContent;
+                const dayData = menuData.find(d => d.day === dayName);
+
+                if (target.classList.contains('day-column')) {
+                    showDayDetails(dayData);
+                } else if (target.tagName === 'TD') {
+                    const mealType = target.dataset.meal;
+                    showMealDetails(dayData, mealType);
+                }
+            });
+
+            sweetsMenuTableBody.addEventListener('click', (event) => {
+                if (event.target.tagName === 'TD' && event.target.dataset.sweetName) {
+                    const sweetName = event.target.dataset.sweetName;
+                    const sweetData = sweetsData.find(s => s.name === sweetName);
+                    if (sweetData) {
+                        const fridayData = menuData.find(d => d.day === 'ಶುಕ್ರವಾರ');
+                        showMealDetails(fridayData, 'dinner', sweetData);
+                    }
+                }
+            });
+
+            function showDayDetails(dayData) {
+                modalTitle.textContent = dayData.day;
+                modalImage.style.display = 'none';
+                modalDetails.innerHTML = `
+                    <div class="day-view-meal">
+                        <h4 class="breakfast-title">ಬೆಳಗಿನ ತಿಂಡಿ (${dayData.breakfast.time})</h4>
+                        <p>${dayData.breakfast.name}</p>
+                    </div>
+                    <div class="day-view-meal">
+                        <h4 class="lunch-title">ಮಧ್ಯಾಹ್ನ ಊಟ (${dayData.lunch.time})</h4>
+                        <p>${dayData.lunch.name}</p>
+                    </div>
+                    <div class="day-view-meal">
+                        <h4 class="evening-title">ಸಂಜೆ ಕಾಫಿ/ಟೀ (${dayData.evening.time})</h4>
+                        <p>${dayData.evening.name}</p>
+                    </div>
+                    <div class="day-view-meal">
+                        <h4 class="dinner-title">ರಾತ್ರಿ ಊಟ (${dayData.dinner.time})</h4>
+                        <p>${dayData.dinner.name}</p>
+                    </div>
+                `;
+                modal.style.display = 'flex';
+            }
+
+            function showMealDetails(dayData, mealType, sweet = null) {
+                const meal = sweet ? { ...dayData[mealType], name: sweet.name, en_name: sweet.en_name } : dayData[mealType];
+                modalTitle.textContent = `${dayData.day} - ${meal.en_name}`;
+                modalImage.src = meal.image || dayData[mealType].image;
+                modalImage.style.display = 'block';
+                modalDetails.innerHTML = `
+                    <p><strong>ವಿವರ:</strong> ${meal.name}</p>
+                    <p class="meal-time"><strong>ಸಮಯ:</strong> ${meal.time}</p>
+                `;
+                modal.style.display = 'flex';
+            }
+
+            closeBtn.onclick = () => modal.style.display = 'none';
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        });
+    </script>
+
+</body>
+</html>
