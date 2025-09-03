@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activity History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #eef2f5; color: #333; }
+        /* --- UPDATED HEADER STYLES --- */
+        .top-header { background-color: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-info { display: flex; align-items: center; gap: 1rem; }
+        .profile-pic { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #3498db; }
+        .profile-details h2 { margin: 0; font-size: 1.2em; font-weight: 500; }
+        .profile-details p { margin: 0; font-size: 0.8em; opacity: 0.8; }
+        .header-center h1 { margin: 0; font-size: 1.8em; }
+        .header-actions { display: flex; align-items: center; gap: 1rem; } /* NEW container for buttons */
+        .back-dashboard-btn { background-color: #3498db; }
+        .logout-btn { background-color: #e74c3c; }
+        .back-dashboard-btn, .logout-btn { color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .back-dashboard-btn:hover { background-color: #2980b9; }
+        .logout-btn:hover { background-color: #c0392b; }
+        
+        /* Main Content Styles (Unchanged) */
+        .history-container { padding: 2rem; max-width: 900px; margin: 2rem auto; }
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 2rem; }
+        .tab-button { background: none; border: none; padding: 1rem 1.5rem; font-size: 1.1em; font-weight: 600; cursor: pointer; color: #555; position: relative; }
+        .tab-button.active { color: #007bff; }
+        .tab-button.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background-color: #007bff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .history-list { display: flex; flex-direction: column; gap: 1rem; }
+        .history-item { display: flex; align-items: center; background: #fff; border-radius: 10px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.07); }
+        .history-item-icon { font-size: 1.8rem; color: #fff; width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; margin-right: 1.5rem; }
+        .icon-meal { background-color: #28a745; }
+        .history-item-details { flex-grow: 1; }
+        .history-item-details h4 { margin: 0 0 5px 0; font-size: 1.1em; }
+        .history-item-details p { margin: 0; font-size: 0.9em; color: #666; }
+        .history-item-timestamp { text-align: right; }
+        .history-item-timestamp .date { font-weight: 600; }
+        .history-item-timestamp .time { font-size: 0.85em; color: #777; }
+        .history-item-meta { font-size: 0.85em; color: #888; margin-top: 8px; border-top: 1px dashed #eee; padding-top: 8px; }
+        .placeholder { text-align: center; padding: 3rem; color: #777; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <div class="profile-info">
+            <img id="profilePic" src="https://placehold.co/100x100/EFEFEF/AAAAAA&text=..." alt="Profile Photo" class="profile-pic">
+            <div class="profile-details">
+                <h2 id="studentName">Loading...</h2>
+                <p id="studentSspId"></p>
+            </div>
+        </div>
+        <div class="header-center"><h1>Activity History</h1></div>
+        <!-- UPDATED: Button container -->
+        <div class="header-actions">
+            <button class="back-dashboard-btn" onclick="window.location.href='student-dashboard.html'">← Dashboard</button>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="history-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="meal">Meal History</button>
+            <button class="tab-button" data-tab="leave">Leave History</button>
+            <button class="tab-button" data-tab="kit">Kit History</button>
+        </div>
+
+        <div id="meal" class="tab-content active"><div id="mealHistoryList" class="history-list"><p class="placeholder">Loading meal history...</p></div></div>
+        <div id="leave" class="tab-content"><p class="placeholder">Leave confirmation feature coming soon.</p></div>
+        <div id="kit" class="tab-content"><p class="placeholder">Kit collection feature coming soon.</p></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sspId = localStorage.getItem('sspId');
+            if (!sspId) {
+                window.location.href = 'student-login.html';
+                return;
+            }
+
+            // --- Populate Header ---
+            document.getElementById('studentName').textContent = localStorage.getItem('studentName') || 'Student';
+            document.getElementById('studentSspId').textContent = `SSP ID: ${sspId}`;
+
+            // --- NEW: Fetch Profile Picture ---
+            async function fetchProfilePhoto() {
+                try {
+                    const response = await fetch(`/api/student-auth/profile/${sspId}`);
+                    const result = await response.json();
+                    if (result.success && result.student.photo) {
+                        document.getElementById('profilePic').src = `/${result.student.photo}`;
+                    } else {
+                        document.getElementById('profilePic').src = 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch profile photo:", error);
+                    document.getElementById('profilePic').src = 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=Error';
+                }
+            }
+            fetchProfilePhoto(); // Call the function to load the photo
+
+            // --- Tab Switching Logic (Unchanged) ---
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabContents.forEach(content => {
+                        content.classList.toggle('active', content.id === tab.dataset.tab);
+                    });
+                });
+            });
+
+            // --- Fetch and Display Meal History (Unchanged) ---
+            async function fetchMealHistory() {
+                const listContainer = document.getElementById('mealHistoryList');
+                try {
+                    const response = await fetch(`/api/history/meals/${sspId}`);
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) throw new Error(result.message);
+                    if (result.history.length === 0) {
+                        listContainer.innerHTML = `<p class="placeholder">No meal confirmation history found.</p>`;
+                        return;
+                    }
+
+                    listContainer.innerHTML = '';
+                    result.history.forEach(item => {
+                        const confirmedForDate = new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                        const confirmedAt = new Date(item.confirmedAt);
+                        const confirmedAtDate = confirmedAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+                        const confirmedAtTime = confirmedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                        let mealDetails = item.meals.join(', ');
+                        if (item.meals.includes('Dinner') && item.dinnerChoice) {
+                            mealDetails = mealDetails.replace('Dinner', `Dinner (${item.dinnerChoice})`);
+                        }
+
+                        const historyItemHTML = `
+                            <div class="history-item">
+                                <div class="history-item-icon icon-meal"><i class="fas fa-utensils"></i></div>
+                                <div class="history-item-details">
+                                    <h4>Meals Confirmed for ${confirmedForDate}</h4>
+                                    <p>${mealDetails}</p>
+                                    <div class="history-item-meta">Confirmed by: ${localStorage.getItem('studentName')} (${sspId})</div>
+                                </div>
+                                <div class="history-item-timestamp">
+                                    <div class="date">${confirmedAtDate}</div>
+                                    <div class="time">${confirmedAtTime}</div>
+                                </div>
+                            </div>
+                        `;
+                        listContainer.innerHTML += historyItemHTML;
+                    });
+                } catch (error) {
+                    listContainer.innerHTML = `<p class="placeholder" style="color: #721c24;">Failed to load history: ${error.message}</p>`;
+                }
+            }
+            fetchMealHistory();
+
+            // --- Logout ---
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.clear();
+                window.location.href = 'student-login.html';
+            });
+        });
+    </script>
+</body>
+</html>

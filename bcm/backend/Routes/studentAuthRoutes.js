@@ -125,4 +125,26 @@ router.post('/reset-password', async (req, res) => { try { const { sspId, otp, n
 router.post('/login', async (req, res) => { try { const { sspId, password } = req.body; const user = await StudentUser.findOne({ sspId: sspId }).populate('studentInfo'); if (!user) { return res.status(404).json({ message: 'This SSP ID is not registered. Please register first.' }); } const isMatch = await bcrypt.compare(password, user.password); if (!isMatch) { return res.status(400).json({ message: 'Invalid password.' }); } res.status(200).json({ success: true, message: 'Login successful!', student: { name: user.studentInfo.name, sspId: user.sspId } }); } catch (error) { console.error("Student Login Error:", error); res.status(500).json({ message: 'Server error during login.' }); } });
 
 
+
+
+// --- GET /api/student-auth/profile/:sspId ---
+// Fetches a student's public profile data for the dashboard
+router.get('/profile/:sspId', async (req, res) => {
+    try {
+        const { sspId } = req.params;
+        
+        // Find the main student record using the SSP ID
+        const studentRecord = await Student.findOne({ sspId: sspId }).select('name sspId photo');
+
+        if (!studentRecord) {
+            return res.status(404).json({ message: "Student record not found." });
+        }
+
+        res.status(200).json({ success: true, student: studentRecord });
+
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        res.status(500).json({ message: 'Server error while fetching profile.' });
+    }
+});
 module.exports = router;

@@ -30,6 +30,8 @@ const studentRoutes = require('./Routes/studentRoutes');
 const rationRoutes = require('./Routes/rationRoutes'); 
 const studentAuthRoutes = require('./Routes/studentAuthRoutes');
 const chiefAuthRoutes = require('./Routes/chiefAuthRoutes');
+const mealRoutes = require('./Routes/mealRoutes');
+const historyRoutes = require('./Routes/historyRoutes');
 
 
 
@@ -38,6 +40,8 @@ app.use('/api/students', studentRoutes);
 app.use('/api/rations', rationRoutes);
 app.use('/api/student-auth', studentAuthRoutes); 
 app.use('/api/chief-auth', chiefAuthRoutes);
+app.use('/api/meals', mealRoutes);
+app.use('/api/history', historyRoutes);
 
 
 

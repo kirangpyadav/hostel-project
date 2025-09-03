@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meal Confirmation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-wrapper {
+            width: 100%;
+            max-width: 550px;
+        }
+        .form-container {
+            background: #fff;
+            padding: 2.5rem 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        #confirmationDate {
+            font-weight: 500;
+            color: #3498db;
+            margin-bottom: 2.5rem;
+            font-size: 1.2em;
+        }
+        .meal-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        .checkbox-group {
+            background-color: #f8f9fa;
+            padding: 1.2rem;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .checkbox-group:hover, .checkbox-group.checked {
+            border-color: #3498db;
+            background-color: #eaf5fc;
+        }
+        .checkbox-group input[type="checkbox"] {
+            display: none; /* Hide the default checkbox */
+        }
+        .checkbox-group label {
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .checkbox-group .fa-circle-check { display: none; }
+        .checkbox-group .fa-circle { display: inline-block; }
+        .checkbox-group.checked .fa-circle-check { display: inline-block; color: #2ecc71; }
+        .checkbox-group.checked .fa-circle { display: none; }
+
+        #dinnerChoiceContainer {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f0f7ff;
+            border-radius: 8px;
+        }
+        .radio-group label {
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 1rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            background-color: #27ae60;
+            margin-top: 1rem;
+        }
+        button[type="submit"]:hover {
+            background-color: #219150;
+        }
+        .message {
+            text-align: center; padding: 0.75rem; border-radius: 5px;
+            margin-top: 1.5rem; font-weight: 500; display: none;
+        }
+        .message.success { background-color: #d4edda; color: #155724; display: block; }
+        .message.error { background-color: #f8d7da; color: #721c24; display: block; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-wrapper">
+        <div id="mealConfirmationContainer" class="form-container">
+            <h2>Meal Confirmation</h2>
+            <p>Select your meals for tomorrow:</p>
+            <h3 id="confirmationDate"></h3>
+            <form id="mealForm">
+                <div class="meal-options">
+                    <div class="checkbox-group" id="group-breakfast">
+                        <input type="checkbox" id="breakfast" name="meal" value="Breakfast">
+                        <label for="breakfast"><i class="far fa-circle"></i><i class="fas fa-circle-check"></i><i class="fas fa-sun"></i> Breakfast</label>
+                    </div>
+                    <div class="checkbox-group" id="group-lunch">
+                        <input type="checkbox" id="lunch" name="meal" value="Lunch">
+                        <label for="lunch"><i class="far fa-circle"></i><i class="fas fa-circle-check"></i><i class="fas fa-cloud-sun"></i> Lunch</label>
+                    </div>
+                    <div class="checkbox-group" id="group-snacks">
+                        <input type="checkbox" id="snacks" name="meal" value="Evening Snacks">
+                        <label for="snacks"><i class="far fa-circle"></i><i class="fas fa-circle-check"></i><i class="fas fa-cookie-bite"></i> Snacks</label>
+                    </div>
+                    <div class="checkbox-group" id="group-dinner">
+                        <input type="checkbox" id="dinner" name="meal" value="Dinner">
+                        <label for="dinner"><i class="far fa-circle"></i><i class="fas fa-circle-check"></i><i class="fas fa-moon"></i> Dinner</label>
+                        <div id="dinnerChoiceContainer">
+                            <div class="radio-group">
+                                <input type="radio" id="veg" name="dinnerChoice" value="Veg" checked>
+                                <label for="veg">Veg</label>
+                                <input type="radio" id="nonveg" name="dinnerChoice" value="Non-Veg">
+                                <label for="nonveg">Non-Veg</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit">Confirm My Meals</button>
+            </form>
+            <p id="formMessage" class="message"></p>
+            <a href="student-dashboard.html" class="back-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('sspId')) {
+                window.location.href = 'student-login.html';
+                return;
+            }
+
+            // --- Date Setup ---
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('confirmationDate').textContent = tomorrow.toLocaleDateString('en-US', dateOptions);
+
+            const dinnerCheckbox = document.getElementById('dinner');
+            const dinnerChoiceContainer = document.getElementById('dinnerChoiceContainer');
+
+            // --- Interactive Checkboxes ---
+            document.querySelectorAll('.checkbox-group').forEach(group => {
+                group.addEventListener('click', (event) => {
+                    if(event.target.name === 'dinnerChoice') return; // Don't toggle if clicking radio buttons
+                    
+                    const checkbox = group.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    group.classList.toggle('checked', checkbox.checked);
+                    
+                    // Show/hide dinner options
+                    if (checkbox.id === 'dinner') {
+                        dinnerChoiceContainer.style.display = checkbox.checked ? 'block' : 'none';
+                    }
+                });
+            });
+
+            // --- Form Submission ---
+            document.getElementById('mealForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formMessage = document.getElementById('formMessage');
+                formMessage.textContent = 'Submitting...';
+                formMessage.className = 'message';
+
+                const selectedMeals = Array.from(document.querySelectorAll('input[name="meal"]:checked')).map(cb => cb.value);
+                
+                let dinnerChoice = null;
+                if (dinnerCheckbox.checked) {
+                    dinnerChoice = document.querySelector('input[name="dinnerChoice"]:checked').value;
+                }
+
+                if (selectedMeals.length === 0) {
+                    formMessage.textContent = 'Please select at least one meal.';
+                    formMessage.className = 'message error';
+                    return;
+                }
+                
+                const confirmationDate = tomorrow.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+                try {
+                    const response = await fetch('/api/meals/confirm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sspId: localStorage.getItem('sspId'),
+                            meals: selectedMeals,
+                            date: confirmationDate,
+                            dinnerChoice: dinnerChoice // Send the new dinner choice
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    
+                    formMessage.textContent = result.message;
+                    formMessage.className = 'message success';
+                    document.getElementById('mealForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+
+                } catch (error) {
+                    formMessage.textContent = error.message;
+                    formMessage.className = 'message error';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
