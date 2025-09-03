@@ -374,6 +374,18 @@
     
     margin-top: 1.5rem; /* Adds some space above the button */
 }
+/* Add these styles inside your <style> tag */
+
+.dashboard-card.leaves .card-icon,
+.dashboard-card.leaves h3 { color: #fd7e14; } /* Orange color */
+.dashboard-card.leaves h3 { border-color: #fd7e14; }
+.dashboard-card.leaves .card-button { background-color: #fd7e14; }
+.dashboard-card.leaves .card-button:hover { background-color: #e67e22; }
+
+/* Optional: for the decorative element */
+.dashboard-card.leaves::after { 
+    background: radial-gradient(circle, rgba(253,126,20,0.15) 0%, rgba(253,126,20,0) 70%); 
+}
     </style>
 </head>
 <body>
@@ -407,6 +419,14 @@
     <p>Handle inventory and manage the reservation and distribution of food rations.</p>
     <button class="card-button" onclick="window.location.href='manage_ration/ration-dashboard.html'">Manage Rations</button>
   </div>
+  <!-- Add this new card inside the 'mainDashboard' element -->
+
+<div class="dashboard-card leaves">
+  <i class="fas fa-person-walking-luggage card-icon"></i>
+  <h3>Leave Requests</h3>
+  <p>Review, approve, or reject leave requests submitted by students.</p>
+  <button class="card-button" onclick="window.location.href='admin_leave_requests.html'">Manage Requests</button>
+</div>
 
   <div class="dashboard-card announcements">
     <i class="fas fa-bullhorn card-icon"></i>

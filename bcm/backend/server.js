@@ -32,6 +32,8 @@ const studentAuthRoutes = require('./Routes/studentAuthRoutes');
 const chiefAuthRoutes = require('./Routes/chiefAuthRoutes');
 const mealRoutes = require('./Routes/mealRoutes');
 const historyRoutes = require('./Routes/historyRoutes');
+const leaveRoutes = require('./Routes/leaveRoutes');
+const adminRoutes = require('./Routes/adminRoutes');
 
 
 
@@ -42,6 +44,8 @@ app.use('/api/student-auth', studentAuthRoutes);
 app.use('/api/chief-auth', chiefAuthRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/leave', leaveRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 

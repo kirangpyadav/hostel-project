@@ -8,11 +8,14 @@ const studentUserSchema = new mongoose.Schema({
         ref: 'Student',
         required: true
     },
-    sspId: {
-        type: String,
-        required: true,
-        unique: true
-    },
+  // In models/Student.js
+
+sspId: {
+    type: String,
+    required: [true, 'SSP ID is required.'],
+    unique: true, // This is the most important part
+    trim: true
+},
     password: {
         type: String,
         required: true

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Leave Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f6f9; }
+        .top-header { background-color: #343a40; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 1.5em; }
+        .header-actions { display: flex; gap: 1rem; }
+        .back-dashboard-btn, .logout-btn { color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .back-dashboard-btn { background-color: #007bff; }
+        .back-dashboard-btn:hover { background-color: #0056b3; }
+        .logout-btn { background-color: #e74c3c; }
+        .logout-btn:hover { background-color: #c0392b; }
+        
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; padding: 2rem; max-width: 1400px; margin: 0 auto; align-items: start; }
+        .section-title { font-size: 1.8em; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid #007bff; }
+        
+        /* Pending Requests Column */
+        .pending-requests-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .request-card { background: #fff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .card-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+        .card-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #007bff; }
+        .card-student-info h3 { margin: 0; font-size: 1.2em; }
+        .card-student-info p { margin: 2px 0 0 0; color: #6c757d; font-size: 0.9em; }
+        .card-body { padding: 1.5rem; }
+        .card-body p { margin: 0 0 1rem 0; line-height: 1.6; }
+        .card-body strong { color: #495057; }
+        .card-actions { display: flex; gap: 1rem; padding: 1rem 1.5rem; background-color: #f8f9fa; border-top: 1px solid #dee2e6; }
+        .action-btn { flex-grow: 1; border: none; padding: 0.8rem; font-size: 1em; font-weight: 600; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; }
+        .approve-btn { background-color: #28a745; color: white; }
+        .reject-btn { background-color: #dc3545; color: white; }
+        
+        /* History Column */
+        .leave-history-list { display: flex; flex-direction: column; gap: 1rem; }
+        .history-item { display: flex; align-items: center; background: #fff; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .history-photo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 1rem; }
+        .history-details { flex-grow: 1; }
+        .history-details p { margin: 0; font-size: 0.9em; }
+        .status-badge { display: inline-block; padding: 3px 8px; font-size: 0.75em; font-weight: 700; border-radius: 20px; color: white; }
+        .status-Approved { background-color: #28a745; }
+        .status-Rejected { background-color: #dc3545; }
+        .status-Completed { background-color: #6c757d; }
+        
+        .placeholder { text-align: center; padding: 3rem; color: #777; font-size: 1.1em; background: #fff; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>Leave Management</h1>
+        <div class="header-actions">
+            <button class="back-dashboard-btn" onclick="window.location.href='admin_dashboard.html'">← Dashboard</button>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- PENDING REQUESTS COLUMN -->
+        <div class="pending-requests-container">
+            <h2 class="section-title">Pending Requests</h2>
+            <div id="pendingRequestsList" class="pending-requests-list">
+                <p class="placeholder">Loading...</p>
+            </div>
+        </div>
+
+        <!-- LEAVE HISTORY COLUMN -->
+        <div class="leave-history-container">
+            <h2 class="section-title">Leave Log</h2>
+            <div id="leaveHistoryList" class="leave-history-list">
+                <p class="placeholder">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pendingList = document.getElementById('pendingRequestsList');
+            const historyList = document.getElementById('leaveHistoryList');
+
+            // --- RENDER FUNCTIONS ---
+            function renderPendingRequests(requests) {
+                if (requests.length === 0) {
+                    pendingList.innerHTML = `<p class="placeholder">No pending leave requests.</p>`;
+                    return;
+                }
+                pendingList.innerHTML = '';
+                requests.forEach(req => {
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+                    card.id = `leave-${req._id}`;
+                    
+                    const startDate = new Date(req.startDate).toLocaleDateString('en-GB');
+                    const returnDate = new Date(req.returnDate).toLocaleDateString('en-GB');
+                    const photoSrc = req.sspId.photo ? `/${req.sspId.photo}` : 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <img src="${photoSrc}" alt="Photo" class="card-photo">
+                            <div class="card-student-info">
+                                <h3>${req.sspId.name}</h3>
+                               <p>SSP ID: ${req.sspId.sspId}</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Dates:</strong> ${startDate} to ${returnDate}</p>
+                            <p><strong>Destination:</strong> ${req.destination}</p>
+                            <p><strong>Reason:</strong> ${req.reason}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn approve-btn" data-leaveid="${req._id}">Approve</button>
+                            <button class="action-btn reject-btn" data-leaveid="${req._id}">Reject</button>
+                        </div>`;
+                    pendingList.appendChild(card);
+                });
+            }
+
+            function renderHistory(requests) {
+                if (requests.length === 0) {
+                    historyList.innerHTML = `<p class="placeholder">No leave history found.</p>`;
+                    return;
+                }
+                historyList.innerHTML = '';
+                requests.forEach(req => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    const photoSrc = req.sspId.photo ? `/${req.sspId.photo}` : 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
+
+                    item.innerHTML = `
+                        <img src="${photoSrc}" alt="Photo" class="history-photo">
+                        <div class="history-details">
+                            <p><strong>${req.sspId.name}</strong></p>
+                            <p>To: ${req.destination} <span class="status-badge status-${req.status}">${req.status}</span></p>
+                        </div>`;
+                    historyList.appendChild(item);
+                });
+            }
+
+            // --- FETCH ALL DATA ON PAGE LOAD ---
+            async function fetchAllData() {
+                try {
+                    const [pendingRes, historyRes] = await Promise.all([
+                        fetch('/api/admin/leave-requests/pending'),
+                        fetch('/api/admin/leave-requests/history')
+                    ]);
+                    const pendingData = await pendingRes.json();
+                    const historyData = await historyRes.json();
+
+                    if (!pendingData.success) throw new Error(pendingData.message);
+                    if (!historyData.success) throw new Error(historyData.message);
+
+                    renderPendingRequests(pendingData.requests);
+                    renderHistory(historyData.requests);
+                } catch (error) {
+                    pendingList.innerHTML = `<p class="placeholder" style="color: red;">Error: ${error.message}</p>`;
+                    historyList.innerHTML = `<p class="placeholder" style="color: red;">Error: ${error.message}</p>`;
+                }
+            }
+            fetchAllData();
+
+            // --- EVENT LISTENER FOR APPROVE/REJECT ACTIONS ---
+            pendingList.addEventListener('click', async (e) => {
+                const target = e.target;
+                const leaveId = target.dataset.leaveid;
+                if (!leaveId) return;
+
+                const action = target.classList.contains('approve-btn') ? 'approve' : 'reject';
+                
+                try {
+                    const response = await fetch(`/api/admin/leave-requests/${leaveId}/${action}`, { method: 'POST' });
+                    const result = await response.json();
+                    if (!result.success) throw new Error(result.message);
+
+                    // For instant feedback, remove the card and refresh both lists
+                    fetchAllData(); 
+                    alert(`Request successfully ${action}d.`);
+
+                } catch (error) {
+                    alert(`Failed to ${action} request: ${error.message}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
