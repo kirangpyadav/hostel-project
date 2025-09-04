@@ -386,6 +386,11 @@
 .dashboard-card.leaves::after { 
     background: radial-gradient(circle, rgba(253,126,20,0.15) 0%, rgba(253,126,20,0) 70%); 
 }
+.dashboard-card.kits .card-icon,
+.dashboard-card.kits h3 { color: #20c997; }
+.dashboard-card.kits h3 { border-color: #20c997; }
+.dashboard-card.kits .card-button { background-color: #20c997; }
+.dashboard-card.kits .card-button:hover { background-color: #1aab80; }
     </style>
 </head>
 <body>
@@ -426,6 +431,14 @@
   <h3>Leave Requests</h3>
   <p>Review, approve, or reject leave requests submitted by students.</p>
   <button class="card-button" onclick="window.location.href='admin_leave_requests.html'">Manage Requests</button>
+</div>
+
+<!-- Add this card to your admin_dashboard.html -->
+<div class="dashboard-card kits">
+  <i class="fas fa-box-open card-icon"></i>
+  <h3>Kit Distribution</h3>
+  <p>Create and manage monthly kit distribution cycles for students.</p>
+  <button class="card-button" onclick="window.location.href='admin_kit_dashboard.html'">Manage Kits</button>
 </div>
 
   <div class="dashboard-card announcements">

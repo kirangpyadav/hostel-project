@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Kit Collection Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f6f9; }
+        .top-header { background-color: #343a40; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 1.5em; }
+        .back-dashboard-btn { background-color: #007bff; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; cursor: pointer; }
+        .main-container { padding: 2rem; max-width: 1000px; margin: 2rem auto; }
+        .report-header { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+        .report-header h2 { margin: 0 0 1rem 0; }
+        
+        /* Progress Bar */
+        .progress-bar { width: 100%; background-color: #e9ecef; border-radius: .25rem; }
+        .progress-bar-fill { height: 20px; background-color: #28a745; width: 0%; border-radius: .25rem; transition: width 0.5s ease-in-out; }
+        #progress-text { margin-top: 0.5rem; font-weight: 600; }
+        
+        /* Search and Table */
+        #searchInput { width: 100%; padding: 0.8rem; font-size: 1rem; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 1rem; box-sizing: border-box; }
+        .report-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .report-table th, .report-table td { padding: 1rem; text-align: left; }
+        .report-table thead { background-color: #f8f9fa; }
+        .report-table tbody tr:nth-of-type(even) { background-color: #f8f9fa; }
+        .status-badge { display: inline-block; padding: 3px 8px; font-size: 0.75em; font-weight: 700; border-radius: 20px; color: white; }
+        .status-Collected { background-color: #28a745; }
+        .status-Pending { background-color: #ffc107; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>Kit Collection Report</h1>
+        <button class="back-dashboard-btn" onclick="window.location.href='admin_kit_dashboard.html'">← Back</button>
+    </div>
+
+    <div class="main-container">
+        <div class="report-header">
+            <h2 id="cycleName">Loading Cycle...</h2>
+            <div class="progress-bar">
+                <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+            <p id="progress-text">0 / 0 Collected</p>
+        </div>
+        
+        <input type="text" id="searchInput" placeholder="Search by student name or SSP ID...">
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>SSP ID</th>
+                    <th>Status</th>
+                    <th>Collected On</th>
+                </tr>
+            </thead>
+            <tbody id="reportTableBody">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cycleNameEl = document.getElementById('cycleName');
+            const progressBarFill = document.getElementById('progressBarFill');
+            const progressText = document.getElementById('progress-text');
+            const searchInput = document.getElementById('searchInput');
+            const tableBody = document.getElementById('reportTableBody');
+
+            // Get the cycleId from the URL (we'll set this up in the next step)
+            const urlParams = new URLSearchParams(window.location.search);
+            const cycleId = urlParams.get('cycleId');
+
+            if (!cycleId) {
+                cycleNameEl.textContent = "Error: No cycle selected.";
+                return;
+            }
+
+            let allStudents = []; // To store the full list for searching
+
+            async function fetchReport() {
+                try {
+                    const response = await fetch(`/api/admin/kit-cycles/${cycleId}/report`);
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.message);
+                    
+                    allStudents = data.collections;
+                    renderTable(allStudents);
+                    updateProgress(allStudents);
+                    
+                    cycleNameEl.textContent = `Report for: ${data.collections[0].cycle.name}`;
+
+                } catch (error) {
+                    tableBody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Error: ${error.message}</td></tr>`;
+                }
+            }
+
+            function renderTable(students) {
+                tableBody.innerHTML = '';
+                students.forEach(item => {
+                    const row = document.createElement('tr');
+                    const collectedDate = item.status === 'Collected' ? new Date(item.collectedAt).toLocaleString('en-GB') : 'N/A';
+                    row.innerHTML = `
+                        <td>${item.student.name}</td>
+                        <td>${item.student.sspId}</td>
+                        <td><span class="status-badge status-${item.status}">${item.status}</span></td>
+                        <td>${collectedDate}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function updateProgress(students) {
+                const total = students.length;
+                const collected = students.filter(s => s.status === 'Collected').length;
+                const percentage = total > 0 ? (collected / total) * 100 : 0;
+                
+                progressBarFill.style.width = `${percentage}%`;
+                progressText.textContent = `${collected} / ${total} Collected`;
+            }
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                const filteredStudents = allStudents.filter(item => 
+                    item.student.name.toLowerCase().includes(query) || 
+                    item.student.sspId.toLowerCase().includes(query)
+                );
+                renderTable(filteredStudents);
+            });
+
+            fetchReport();
+        });
+    </script>
+</body>
+</html>

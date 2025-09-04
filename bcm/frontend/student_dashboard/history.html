@@ -59,6 +59,14 @@
         .status-Approved { background-color: #28a745; }
         .status-Rejected { background-color: #dc3545; }
         .status-Completed { background-color: #6c757d; }
+        /* Add this with your other icon styles */
+.icon-kit { background-color: #17a2b8; }
+
+/* Add these with your other status badge styles */
+.status-Collected { background-color: #28a745; }
+.status-Pending { background-color: #ffc107; color: #333; }
+/* The dot needs to be escaped with a backslash for the CSS class to work */
+.status-Not\.Collected { background-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -88,9 +96,11 @@
         <div id="leave" class="tab-content">
             <div id="leaveHistoryList" class="history-list"><p class="placeholder">Loading leave history...</p></div>
         </div>
-        <div id="kit" class="tab-content">
-            <p class="placeholder">Kit collection feature coming soon.</p>
-        </div>
+       <div id="kit" class="tab-content">
+    <div id="kitHistoryList" class="history-list">
+        <p class="placeholder">Loading kit history...</p>
+    </div>
+</div>
     </div>
 
     <script>
@@ -181,10 +191,52 @@
                     });
                 } catch (error) { listContainer.innerHTML = `<p class="placeholder" style="color: #721c24;">Failed to load history: ${error.message}</p>`; }
             }
+            // Paste this entire function into your script block
+
+async function fetchKitHistory() {
+    const listContainer = document.getElementById('kitHistoryList');
+    try {
+        const response = await fetch(`/api/history/kit/${sspId}`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message);
+        
+        if (result.history.length === 0) {
+            listContainer.innerHTML = `<p class="placeholder">No kit collection history found.</p>`;
+            return;
+        }
+
+        listContainer.innerHTML = '';
+        result.history.forEach(item => {
+            const collectedDate = item.status === 'Collected' 
+                ? `on ${new Date(item.collectedAt).toLocaleDateString('en-GB')}` 
+                : '';
+            
+            // Replace spaces with a dot for the CSS class name (e.g., "Not Collected" -> "Not.Collected")
+            const statusClass = item.status.replace(' ', '.');
+
+            const historyItemHTML = `
+                <div class="history-item">
+                    <div class="history-item-icon icon-kit"><i class="fas fa-box-open"></i></div>
+                    <div class="history-item-details">
+                        <h4>
+                            ${item.cycle.name}
+                            <span class="status-badge status-${statusClass}">${item.status}</span>
+                        </h4>
+                        <p>${item.status} ${collectedDate}</p>
+                    </div>
+                </div>
+            `;
+            listContainer.innerHTML += historyItemHTML;
+        });
+    } catch (error) {
+        listContainer.innerHTML = `<p class="placeholder" style="color: #721c24;">Failed to load kit history: ${error.message}</p>`;
+    }
+}
 
             fetchProfilePhoto();
             fetchMealHistory();
             fetchLeaveHistory();
+            fetchKitHistory(); 
 
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.clear();

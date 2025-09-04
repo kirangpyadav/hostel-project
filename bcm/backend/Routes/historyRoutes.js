@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const MealConfirmation = require('../models/MealConfirmation');
 const LeaveRequest = require('../models/LeaveRequest');
-// Add this line at the top of routes/historyRoutes.js
+const KitCollection = require('../models/KitCollection');
 const Student = require('../models/Student');
 
 // Meal history route (unchanged)
@@ -66,6 +66,29 @@ router.get('/leave/:sspId', async (req, res) => {
     } catch (error) {
         console.error('Error fetching leave history:', error);
         res.status(500).json({ success: false, message: 'Server error while fetching leave history.' });
+    }
+});
+
+// --- NEW ROUTE FOR KIT HISTORY ---
+router.get('/kit/:sspId', async (req, res) => {
+    try {
+        const { sspId } = req.params;
+
+        const student = await Student.findOne({ sspId: sspId });
+        if (!student) {
+            return res.status(200).json({ success: true, history: [] });
+        }
+
+        // Find all kit records for this student and populate the cycle name
+        const kitHistory = await KitCollection.find({ student: student._id })
+            .populate('cycle', 'name') // Get the name of the kit cycle
+            .sort({ 'cycle.createdAt': -1 }); // Sort by when the cycle was created
+
+        res.status(200).json({ success: true, history: kitHistory });
+
+    } catch (error) {
+        console.error('Error fetching kit history:', error);
+        res.status(500).json({ success: false, message: 'Server error while fetching kit history.' });
     }
 });
 module.exports = router;

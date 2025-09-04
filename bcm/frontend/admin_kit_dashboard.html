@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Kits</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f6f9; }
+        .top-header { background-color: #343a40; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 1.5em; }
+        .header-actions { display: flex; gap: 1rem; }
+        .back-dashboard-btn, .logout-btn { color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .back-dashboard-btn { background-color: #007bff; }
+        .logout-btn { background-color: #e74c3c; }
+        .main-container { padding: 2rem; max-width: 1200px; margin: 2rem auto; }
+        .section-title { font-size: 1.8em; font-weight: 700; margin-bottom: 1.5rem; }
+        
+        .create-cycle-container { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.8rem; font-family: inherit; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: 8px; border:none; background-color: #007bff; color: white; cursor: pointer; }
+        .message { margin-top: 1rem; font-weight: 500; }
+
+        .scan-btn { display: block; width: 100%; padding: 1rem; margin-bottom: 2rem; background-color: #28a745; color: white; text-align: center; text-decoration: none; font-size: 1.2em; font-weight: 600; border-radius: 8px; transition: background-color 0.2s; }
+        .scan-btn:hover { background-color: #218838; }
+
+        /* Cycles List */
+        .cycles-list { display: flex; flex-direction: column; gap: 1rem; }
+        .cycle-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background: #fff; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .cycle-item-info { flex-grow: 1; }
+        .cycle-item-info h4 { margin: 0 0 5px 0; display: flex; align-items: center; }
+        .cycle-item-info p { margin: 0; color: #6c757d; }
+        .cycle-item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .action-btn { border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+        .view-btn { background-color: #17a2b8; color: white; }
+        .remind-btn { background-color: #ffc107; color: #212529; }
+        .close-btn { background-color: #dc3545; color: white; }
+        
+        /* Status Badge */
+        .status-badge { display: inline-block; padding: 3px 8px; font-size: 0.75em; font-weight: 700; border-radius: 20px; color: white; margin-left: 10px; }
+        .status-Active { background-color: #28a745; }
+        .status-Closed { background-color: #6c757d; }
+        .placeholder { text-align: center; padding: 2rem; color: #777; }
+        /* Add this with your other button styles */
+.reopen-btn { background-color: #6f42c1; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>Kit Distribution Management</h1>
+        <div class="header-actions">
+            <button class="back-dashboard-btn" onclick="window.location.href='admin_dashboard.html'">← Dashboard</button>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="create-cycle-container">
+            <h2 class="section-title">Actions</h2>
+            <a href="admin_scan_kit.html" class="scan-btn"><i class="fas fa-qrcode"></i> Start Scanning & Confirmation</a>
+            
+            <h2 class="section-title" style="margin-top: 2rem;">Create New Kit Cycle</h2>
+            <form id="createCycleForm">
+                <div class="form-group full-width"><label for="cycleName">Cycle Name (e.g., September 2025 Kit)</label><input type="text" id="cycleName" required></div>
+                <div class="form-grid">
+                    <div class="form-group"><label for="startDate">Collection Start Date</label><input type="date" id="startDate" required></div>
+                    <div class="form-group"><label for="endDate">Collection End Date</label><input type="date" id="endDate" required></div>
+                </div>
+                <div class="form-group full-width"><label for="contents">Kit Contents (list one item per line)</label><textarea id="contents" rows="4" required></textarea></div>
+                <button type="submit" class="submit-btn">Create & Announce Cycle</button>
+            </form>
+            <p id="formMessage" class="message"></p>
+        </div>
+
+        <div class="past-cycles-container">
+            <h2 class="section-title">Distribution History</h2>
+            <div id="cyclesList" class="cycles-list"><p class="placeholder">Loading history...</p></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const createCycleForm = document.getElementById('createCycleForm');
+            const formMessage = document.getElementById('formMessage');
+            const cyclesList = document.getElementById('cyclesList');
+            
+           // In admin_kit_dashboard.html
+
+async function fetchCycles() {
+    try {
+     
+        // Ensure the URL does not have any extra characters like ';1'
+        const response = await fetch('/api/admin/kit-cycles?_cache=' + new Date().getTime());
+     
+
+        const data = await response.json();
+        if (!data.success) throw new Error(data.message);
+        
+        if (data.cycles.length === 0) {
+            cyclesList.innerHTML = `<p class="placeholder">No kit distribution cycles found.</p>`;
+            return;
+        }
+
+        cyclesList.innerHTML = '';
+        data.cycles.forEach(cycle => {
+            const item = document.createElement('div');
+            item.className = 'cycle-item';
+            const statusText = cycle.isActive ? 'Active' : 'Closed';
+            const startDate = new Date(cycle.startDate).toLocaleDateString('en-GB');
+            const endDate = new Date(cycle.endDate).toLocaleDateString('en-GB');
+
+           // REPLACE IT WITH THIS
+item.innerHTML = `
+    <div class="cycle-item-info">
+        <h4>
+            ${cycle.name}
+            <span class="status-badge status-${statusText}">${statusText}</span>
+        </h4>
+        <p>Collection Window: ${startDate} - ${endDate}</p>
+    </div>
+    <div class="cycle-item-actions">
+        <button class="action-btn view-btn" onclick="window.location.href='admin_kit_report.html?cycleId=${cycle._id}'">View Report</button>
+        ${cycle.isActive ? `
+            <button class="action-btn remind-btn" data-cycleid="${cycle._id}">Send Reminder</button>
+            <button class="action-btn close-btn" data-cycleid="${cycle._id}">Close Cycle</button>
+        ` : `
+            <button class="action-btn reopen-btn" data-cycleid="${cycle._id}">Re-open Cycle</button>
+        `}
+    </div>
+`;
+            cyclesList.appendChild(item);
+        });
+    } catch (error) {
+        cyclesList.innerHTML = `<p class="placeholder" style="color: red;">Error: ${error.message}</p>`;
+    }
+}
+            
+            createCycleForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                formMessage.textContent = 'Creating cycle...';
+                formMessage.style.color = '#333';
+                const formData = {
+                    name: document.getElementById('cycleName').value,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    contents: document.getElementById('contents').value
+                };
+                try {
+                    const response = await fetch('/api/admin/kit-cycles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    
+                    formMessage.textContent = result.message;
+                    formMessage.style.color = 'green';
+                    createCycleForm.reset();
+                    fetchCycles();
+                } catch (error) {
+                    formMessage.textContent = `Error: ${error.message}`;
+                    formMessage.style.color = 'red';
+                }
+            });
+
+            cyclesList.addEventListener('click', async (e) => {
+                const target = e.target;
+                const cycleId = target.dataset.cycleid;
+                if (!cycleId) return;
+
+                if (target.classList.contains('remind-btn')) {
+                    if (confirm('Are you sure you want to send a final reminder SMS to all remaining students for this cycle?')) {
+                        try {
+                            target.disabled = true;
+                            target.textContent = 'Sending...';
+                            const response = await fetch(`/api/admin/kit-cycles/${cycleId}/remind`, { method: 'POST' });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.message);
+                            alert(result.message);
+                        } catch (error) {
+                            alert(`Error: ${error.message}`);
+                        } finally {
+                            target.disabled = false;
+                            target.textContent = 'Send Reminder';
+                        }
+                    }
+                }
+
+                if (target.classList.contains('close-btn')) {
+                    if (confirm('WARNING: This will permanently close the collection cycle and mark all remaining kits as "Not Collected". This cannot be undone. Are you sure?')) {
+                        try {
+                            target.disabled = true;
+                            target.textContent = 'Closing...';
+                            const response = await fetch(`/api/admin/kit-cycles/${cycleId}/close`, { method: 'POST' });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.message);
+                            alert(result.message);
+                            fetchCycles(); // Refresh the list
+                        } catch (error) {
+                            alert(`Error: ${error.message}`);
+                        }
+                    }
+                }
+
+                // Add this new block inside your 'click' event listener
+
+if (target.classList.contains('reopen-btn')) {
+    if (confirm('Are you sure you want to re-open this cycle? This will allow students who have not collected their kit to do so.')) {
+        try {
+            target.disabled = true;
+            target.textContent = 'Re-opening...';
+            const response = await fetch(`/api/admin/kit-cycles/${cycleId}/reopen`, { method: 'POST' });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message);
+            alert(result.message);
+            fetchCycles(); // Refresh the list to show the new "Active" status
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        }
+    }
+}
+
+                
+            });
+
+            fetchCycles(); // Initial load
+        });
+    </script>
+</body>
+</html>
+

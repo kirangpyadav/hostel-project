@@ -34,6 +34,7 @@ const mealRoutes = require('./Routes/mealRoutes');
 const historyRoutes = require('./Routes/historyRoutes');
 const leaveRoutes = require('./Routes/leaveRoutes');
 const adminRoutes = require('./Routes/adminRoutes');
+const studentkitRoutes = require('./Routes/studentkitRoutes');
 
 
 
@@ -46,6 +47,9 @@ app.use('/api/meals', mealRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/student', studentkitRoutes);
+
+
 
 
 
