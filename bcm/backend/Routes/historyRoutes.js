@@ -19,35 +19,47 @@ router.get('/meals/:sspId', async (req, res) => {
     }
 });
 
-// --- UPDATED LOGIC FOR LEAVE HISTORY ---
+// Leave history route with the new auto-completion SMS
 router.get('/leave/:sspId', async (req, res) => {
     try {
         const { sspId } = req.params;
         
-        // --- FIX ---
-        // 1. First, find the student using their STRING sspId.
         const student = await Student.findOne({ sspId: sspId });
         if (!student) {
-            // If there's no student, there's no history.
             return res.status(200).json({ success: true, history: [] });
         }
 
-        // 2. Now, use the student's unique DATABASE _id to find their leave requests.
-        const leaveRequests = await LeaveRequest.find({ sspId: student._id }).sort({ startDate: -1 });
+        const leaveRequests = await LeaveRequest.find({ sspId: student._id }).sort({ updatedAt: -1 });
 
-        // 3. Auto-completion logic (this part is still correct)
-        const updatePromises = leaveRequests.map(leave => {
+        // Using Promise.all to handle all potential updates and SMS sending concurrently
+        const updatePromises = leaveRequests.map(async (leave) => {
+            // If the leave was approved and its return date has now passed...
             if (leave.status === 'Approved' && new Date() > leave.returnDate) {
                 leave.isActive = false;
                 leave.status = 'Completed';
-                return leave.save();
+                await leave.save(); // Save the change first
+
+                // --- NEW: SEND "LEAVE COMPLETED" SMS ---
+                if (student.phone) {
+                    try {
+                        const messageBody = `Hi ${student.name}. Your approved leave has been marked as completed. We hope you had a safe journey! You can now apply for a new leave if needed.`;
+                        await twilioClient.messages.create({ 
+                            body: messageBody, 
+                            from: process.env.TWILIO_PHONE_NUMBER, 
+                            to: `+91${student.phone}` 
+                        });
+                    } catch (smsError) {
+                        console.error("Failed to send 'leave completed' SMS:", smsError);
+                        // We log the error but don't stop the process
+                    }
+                }
             }
-            return Promise.resolve();
         });
+
         await Promise.all(updatePromises);
         
-        // 4. Fetch the data one last time to get the most up-to-date statuses.
-        const updatedLeaveRequests = await LeaveRequest.find({ sspId: student._id }).sort({ startDate: -1 });
+        // Fetch the data one last time to get the most up-to-date statuses.
+        const updatedLeaveRequests = await LeaveRequest.find({ sspId: student._id }).sort({ updatedAt: -1 });
 
         res.status(200).json({ success: true, history: updatedLeaveRequests });
 
@@ -56,5 +68,4 @@ router.get('/leave/:sspId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error while fetching leave history.' });
     }
 });
-
 module.exports = router;
