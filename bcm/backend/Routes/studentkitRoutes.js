@@ -3,7 +3,7 @@ const router = express.Router();
 const KitCollection = require('../models/KitCollection');
 const Student = require('../models/Student');
 
-// GET endpoint to fetch ALL of a student's active kit collection records
+// GET endpoint to fetch ALL of a student's kit collection records
 router.get('/kit-status/:sspId', async (req, res) => {
     try {
         const { sspId } = req.params;
@@ -13,19 +13,13 @@ router.get('/kit-status/:sspId', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Student not found.' });
         }
 
-        // --- NEW LOGIC ---
-        // Find ALL collection records for this student that are part of an ACTIVE cycle.
-        const collectionRecords = await KitCollection.find({ student: student._id })
-            .populate({
-                path: 'cycle',
-                match: { isActive: true } // Only populate if the cycle is active
-            })
-            .sort({ 'cycle.startDate': 1 }); // Sort by the start date, oldest first
+        // Find ALL collection records for this student and populate the cycle details.
+        // This gives the frontend all the information it needs to be smart.
+        const allCollections = await KitCollection.find({ student: student._id })
+            .populate('cycle') // Get full details for each cycle
+            .sort({ createdAt: -1 }); // Sort by newest first
 
-        // Filter out any records where the cycle was not populated (because it's not active)
-        const activeCollections = collectionRecords.filter(record => record.cycle);
-
-        res.status(200).json({ success: true, collections: activeCollections });
+        res.status(200).json({ success: true, collections: allCollections });
 
     } catch (error) {
         console.error("Error fetching kit status:", error);

@@ -14,24 +14,15 @@
         .kit-card { background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; padding: 2.5rem; }
         .kit-card h2 { margin-top: 0; color: #2c3e50; }
         .kit-card .subtitle { font-size: 1.1em; color: #6c757d; margin-top: -1rem; margin-bottom: 2rem; }
-        
-        /* QR Code Styling */
-        .qrcode-wrapper { display: flex; justify-content: center; margin-bottom: 1.5rem; }
         .qrcode-wrapper canvas { border: 5px solid #007bff; border-radius: 10px; padding: 10px; }
-        
-        /* Kit Contents & Missed Kits Styling */
-        .kit-contents, .missed-kits { text-align: left; background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
-        .kit-contents h4, .missed-kits h4 { margin-top: 0; color: #343a40; }
-        .kit-contents ul, .missed-kits ul { list-style-type: none; padding-left: 0; }
-        .kit-contents li, .missed-kits li { margin-bottom: 0.5rem; }
-        
-        /* Message Styling */
+        .missed-kits { text-align: left; background-color: #fff8e1; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 5px solid #ffc107; }
+        .missed-kits h4 { margin-top: 0; color: #343a40; }
+        .missed-kits ul { list-style-type: none; padding-left: 0; }
+        .missed-kits li { margin-bottom: 0.5rem; font-weight: 500; }
         .message-icon { font-size: 4rem; margin-bottom: 1rem; }
         .success-icon { color: #28a745; }
         .warning-icon { color: #ffc107; }
         .info-icon { color: #17a2b8; }
-        
-        /* Links Styling */
         .links-container { margin-top: 2rem; display: flex; justify-content: center; gap: 2rem; }
         .action-link { color: #007bff; text-decoration: none; font-weight: 600; }
     </style>
@@ -40,99 +31,72 @@
     <div class="main-container" id="mainContainer">
         <div class="kit-card"><p>Loading your kit status...</p></div>
     </div>
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const sspId = localStorage.getItem('sspId');
-        if (!sspId) {
-            window.location.href = 'student-login.html';
-            return;
-        }
 
-        const mainContainer = document.getElementById('mainContainer');
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const sspId = localStorage.getItem('sspId');
+            if (!sspId) { window.location.href = 'student-login.html'; return; }
 
-        try {
-            const response = await fetch(`/api/student/kit-status/${sspId}`);
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
+            const mainContainer = document.getElementById('mainContainer');
 
-            const allCollections = result.collections || [];
-            mainContainer.innerHTML = ''; // Clear the loading message
+            try {
+                const response = await fetch(`/api/student/kit-status/${sspId}`);
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
 
-            // --- THE NEW SMART LOGIC ---
+                const allCollections = result.collections || [];
+                mainContainer.innerHTML = ''; // Clear loading message
 
-            // Case 1: Are there any ACTIVE and PENDING kits? (This is the highest priority)
-            const pendingKits = allCollections.filter(c => c.cycle && c.cycle.isActive && c.status === 'Pending');
-            
-            if (pendingKits.length > 0) {
-                pendingKits.forEach(item => {
-                    const { cycle, qrToken } = item;
-                    const cardHTML = `
-                        <div class="kit-card">
-                            <h2>${cycle.name}</h2>
-                            <p class="subtitle">Present this QR code to the admin to collect.<br><strong>Collect by: ${new Date(cycle.endDate).toLocaleDateString('en-GB')}</strong></p>
-                            <div class="qrcode-wrapper" id="qr-${item._id}"></div>
-                        </div>`;
-                    mainContainer.innerHTML += cardHTML;
-                });
-                // Generate QR codes after adding HTML to the DOM
-                pendingKits.forEach(item => {
-                    const qr = qrcode(4, 'L');
-                    qr.addData(item.qrToken);
-                    qr.make();
-                    document.getElementById(`qr-${item._id}`).innerHTML = qr.createImgTag(6, 10);
-                });
+                // --- THE FINAL SMART LOGIC ---
 
-            } else {
-                // Case 2: No active kits. Now we check if any kits were MISSED from closed cycles.
-                const missedKits = allCollections.filter(c => c.cycle && !c.cycle.isActive && c.status === 'Not Collected');
-                if (missedKits.length > 0) {
-                    const missedList = missedKits.map(item => `<li>- ${item.cycle.name}</li>`).join('');
-                    mainContainer.innerHTML = `
-                        <div class="kit-card">
-                            <i class="fas fa-exclamation-triangle message-icon warning-icon"></i>
-                            <h2>Missed Collection</h2>
-                            <p class="subtitle">The collection period for the following kit(s) has ended:</p>
-                            <div class="missed-kits">
-                                <h4>Missed Kits:</h4>
-                                <ul>${missedList}</ul>
-                            </div>
-                            <p>Please contact the hostel admin for further assistance.</p>
-                        </div>`;
+                // Case 1: Active and Pending kits? (Highest Priority)
+                const pendingKits = allCollections.filter(c => c.cycle && c.cycle.isActive && c.status === 'Pending');
+                
+                if (pendingKits.length > 0) {
+                    // This shows the QR code(s) for any currently active cycles.
+                    pendingKits.forEach(item => {
+                        const cardHTML = `<div class="kit-card"><h2>${item.cycle.name}</h2><p class="subtitle">Present this QR code to the admin to collect.<br><strong>Collect by: ${new Date(item.cycle.endDate).toLocaleDateString('en-GB')}</strong></p><div class="qrcode-wrapper" id="qr-${item._id}"></div></div>`;
+                        mainContainer.innerHTML += cardHTML;
+                    });
+                    pendingKits.forEach(item => {
+                        const qr = qrcode(4, 'L');
+                        qr.addData(item.qrToken);
+                        qr.make();
+                        document.getElementById(`qr-${item._id}`).innerHTML = qr.createImgTag(6, 10);
+                    });
                 } else {
-                    // Case 3: No pending and no missed kits. This means everything is either collected or no cycles have happened yet.
-                    if (allCollections.length > 0) {
-                         mainContainer.innerHTML = `
+                    // Case 4: No active kits. Are there any MISSED kits from closed cycles?
+                    const missedKits = allCollections.filter(c => c.cycle && !c.cycle.isActive && c.status === 'Not Collected');
+                    if (missedKits.length > 0) {
+                        const missedList = missedKits.map(item => `<li>- <strong>${item.cycle.name}</strong></li>`).join('');
+                        mainContainer.innerHTML = `
                             <div class="kit-card">
-                                <i class="fas fa-check-circle message-icon success-icon"></i>
-                                <h2>All Kits Collected!</h2>
-                                <p class="subtitle">You do not have any pending kits to collect at this time.</p>
-                                <p>For more details, please view your full activity log.</p>
+                                <i class="fas fa-exclamation-triangle message-icon warning-icon"></i>
+                                <h2>Missed Collection Notice</h2>
+                                <p class="subtitle">The collection period for the following kit(s) has closed:</p>
+                                <div class="missed-kits">
+                                    <h4>Missed Kits:</h4>
+                                    <ul>${missedList}</ul>
+                                </div>
+                                <p>Please contact your admin to request that they re-open the cycle for you.</p>
                             </div>`;
                     } else {
-                         mainContainer.innerHTML = `
-                            <div class="kit-card">
-                                <i class="fas fa-info-circle message-icon info-icon"></i>
-                                <h2>No Active Cycles</h2>
-                                <p class="subtitle">There are no kit distribution cycles right now. Please check back later.</p>
-                            </div>`;
+                        // Case 2 & 3: No pending and no missed kits.
+                        if (allCollections.length > 0) {
+                             mainContainer.innerHTML = `<div class="kit-card"><i class="fas fa-check-circle message-icon success-icon"></i><h2>All Kits Collected!</h2><p class="subtitle">You have no pending kits at this time.</p></div>`;
+                        } else {
+                             mainContainer.innerHTML = `<div class="kit-card"><i class="fas fa-info-circle message-icon info-icon"></i><h2>No Active Cycles</h2><p class="subtitle">There are no kit distributions right now.</p></div>`;
+                        }
                     }
                 }
-            }
-            
-            // Add the action links at the very end, regardless of the scenario.
-            mainContainer.innerHTML += `
-                <div class="kit-card" style="background: none; box-shadow: none; padding-top: 0;">
-                    <div class="links-container">
-                        <a href="student-dashboard.html" class="action-link">← Go to Dashboard</a>
-                        <a href="history.html" class="action-link">View Full History →</a>
-                    </div>
-                </div>`;
+                
+                // Add the action links at the end.
+                mainContainer.innerHTML += `<div class="kit-card" style="background: none; box-shadow: none; padding-top: 0;"><div class="links-container"><a href="student-dashboard.html" class="action-link">← Go to Dashboard</a><a href="history.html" class="action-link">View Full History →</a></div></div>`;
 
-        } catch (error) {
-            mainContainer.innerHTML = `<div class="kit-card"><p style="color: red;">Error: ${error.message}</p></div>`;
-        }
-    });
-</script>
+            } catch (error) {
+                mainContainer.innerHTML = `<div class="kit-card"><p style="color: red;">Error: ${error.message}</p></div>`;
+            }
+        });
+    </script>
 </body>
 </html>
-
