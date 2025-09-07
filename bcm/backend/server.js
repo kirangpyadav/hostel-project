@@ -35,6 +35,7 @@ const historyRoutes = require('./Routes/historyRoutes');
 const leaveRoutes = require('./Routes/leaveRoutes');
 const adminRoutes = require('./Routes/adminRoutes');
 const studentkitRoutes = require('./Routes/studentkitRoutes');
+const chiefRoutes = require('./Routes/chiefRoutes');
 
 
 
@@ -48,6 +49,7 @@ app.use('/api/history', historyRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentkitRoutes);
+app.use('/api/chief', chiefRoutes);
 
 
 

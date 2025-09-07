@@ -244,27 +244,35 @@
             });
 
             // --- Login Handler ---
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                loginMessage.textContent = '';
-                const loginId = document.getElementById('loginId').value;
-                const password = document.getElementById('loginPassword').value;
-                try {
-                    const response = await fetch('/api/chief-auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ loginId, password })
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.message);
-                    localStorage.setItem('chiefName', result.chief.name);
-                    localStorage.setItem('chiefLoginId', result.chief.loginId);
-                    window.location.href = 'chief_dashboard.html';
-                } catch (error) {
-                    loginMessage.textContent = error.message;
-                    loginMessage.className = 'message error';
-                }
-            });
+           // Replace your existing function with this final, working version
+
+        // --- CORRECTED LOGIN HANDLER ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginMessage.textContent = '';
+            
+            const loginId = document.getElementById('loginId').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/chief-auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loginId, password })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+
+                // THE FIX: Save the correct unique _id to 'chiefId'
+                localStorage.setItem('chiefName', result.chief.name);
+                localStorage.setItem('chiefId', result.chief._id); // This now saves the correct ID
+                
+                window.location.href = '/chief_dashboard/chief-dashboard.html';
+
+            } catch (error) {
+                loginMessage.textContent = error.message;
+            }
+        });
 
             // --- Forgot Password Flow ---
             function startResendTimer() {

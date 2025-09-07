@@ -1,13 +1,14 @@
-// models/MealConfirmation.js
-
 const mongoose = require('mongoose');
 
 const mealConfirmationSchema = new mongoose.Schema({
+    // --- THIS IS THE CRITICAL FIX ---
+    // The type must be ObjectId to correctly link to the Student model.
     sspId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Student'
+        ref: 'Student' 
     },
+    // --- END OF FIX ---
     date: {
         type: Date,
         required: true
@@ -16,10 +17,9 @@ const mealConfirmationSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
-    // --- NEW FIELD ADDED ---
     dinnerChoice: {
         type: String,
-        enum: ['Veg', 'Non-Veg'], // Only allows these two values
+        enum: ['Veg', 'Non-Veg'],
         default: null
     },
     confirmedAt: {
@@ -28,6 +28,7 @@ const mealConfirmationSchema = new mongoose.Schema({
     }
 });
 
+// This index now uses the corrected sspId field.
 mealConfirmationSchema.index({ sspId: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('MealConfirmation', mealConfirmationSchema);

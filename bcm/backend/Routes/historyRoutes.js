@@ -11,8 +11,18 @@ const Student = require('../models/Student');
 router.get('/meals/:sspId', async (req, res) => {
     try {
         const { sspId } = req.params;
-        const confirmations = await MealConfirmation.find({ sspId }).sort({ date: -1 });
+        
+        // --- THIS IS THE FIX ---
+        // 1. Find the student by their STRING sspId.
+        const student = await Student.findOne({ sspId: sspId });
+        if (!student) {
+            return res.status(200).json({ success: true, history: [] });
+        }
+
+        // 2. Use their unique DATABASE _id to find their meal history.
+        const confirmations = await MealConfirmation.find({ sspId: student._id }).sort({ date: -1 });
         res.status(200).json({ success: true, history: confirmations });
+
     } catch (error) {
         console.error('Error fetching meal history:', error);
         res.status(500).json({ success: false, message: 'Server error while fetching meal history.' });

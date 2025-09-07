@@ -52,29 +52,35 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Server error during registration.' });
     }
 });
-
-// --- POST /api/chief-auth/login ---
+// --- CORRECTED LOGIN ROUTE ---
 router.post('/login', async (req, res) => {
-    try {
-        const { loginId, password } = req.body;
-        const user = await ChiefUser.findOne({ loginId }).populate('chiefInfo');
-        if (!user) {
-            return res.status(404).json({ message: 'This Login ID is not registered. Please register first.' });
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid password.' });
-        }
-        res.status(200).json({
-            success: true,
-            message: 'Login successful!',
-            chief: { name: user.chiefInfo.name, loginId: user.loginId }
-        });
-    } catch (error) {
-        console.error("Chief Login Error:", error);
-        res.status(500).json({ message: 'Server error during login.' });
-    }
+    try {
+        const { loginId, password } = req.body;
+        const user = await ChiefUser.findOne({ loginId }).populate('chiefInfo');
+        if (!user || !user.chiefInfo) {
+            return res.status(404).json({ message: 'Login ID not registered or associated chief record is missing.' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid password.' });
+        }
+        
+        // THE FIX: Send the unique DATABASE ID (_id) of the ChiefUser.
+        res.status(200).json({
+            success: true,
+            message: 'Login successful!',
+            chief: { 
+                _id: user._id, // This is the unique ID the dashboard needs.
+                name: user.chiefInfo.name
+            }
+        });
+    } catch (error) {
+        console.error("Chief Login Error:", error);
+        res.status(500).json({ message: 'Server error during login.' });
+    }
 });
+
+
 
 // --- POST /api/chief-auth/forgot-password ---
 router.post('/forgot-password', async (req, res) => {
@@ -139,6 +145,30 @@ router.post('/reset-password', async (req, res) => {
         console.error("Reset Password Error:", error);
         res.status(500).json({ message: 'Server error.' });
     }
+});
+
+
+// --- CORRECTED PROFILE ROUTE ---
+router.get('/profile/:id', async (req, res) => {
+    try {
+        const user = await ChiefUser.findById(req.params.id)
+            // --- THIS IS THE ONE-WORD FIX ---
+            // We must ask for the 'loginId' field, because that is its name in the KitchenChief model.
+            .populate('chiefInfo', 'name loginId photo'); 
+
+        if (!user || !user.chiefInfo) {
+            return res.status(404).json({ success: false, message: 'Chief not found.' });
+        }
+
+        // Now, the chief object will correctly contain the 'loginId' field
+        res.status(200).json({ 
+            success: true, 
+            chief: user.chiefInfo 
+        });
+    } catch (error) {
+        console.error("Error fetching chief profile:", error);
+        res.status(500).json({ success: false, message: 'Server error.' });
+    }
 });
 
 module.exports = router;
