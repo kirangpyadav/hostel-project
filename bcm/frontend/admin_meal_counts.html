@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Live Meal Counts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f6f9; }
+        .top-header { background-color: #343a40; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 1.5em; }
+        .back-dashboard-btn { background-color: #007bff; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; text-decoration: none; }
+        .main-container { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; }
+        .date-picker-group label { font-weight: 600; margin-right: 1rem; }
+        .date-picker-group input { padding: 0.5rem; font-family: inherit; font-size: 1em; border: 1px solid #ccc; border-radius: 5px; }
+        .counts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .count-card { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); text-align: center; }
+        .count-card h3 { margin: 0 0 0.5rem 0; font-size: 1.2em; color: #6c757d; }
+        .count-card .count-number { font-size: 2.5em; font-weight: 700; color: #007bff; }
+        .sub-counts-container { display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.75rem; }
+        .sub-count-item { font-size: 1.1em; font-weight: 500; color: #6c757d; }
+        .sub-count-item strong { font-weight: 700; margin-left: 0.25rem; }
+        .sub-count-item .veg { color: #28a745; }
+        .sub-count-item .non-veg { color: #dc3545; }
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 2rem; }
+        .tab-button { background: none; border: none; padding: 1rem 1.5rem; font-size: 1.1em; font-weight: 600; cursor: pointer; }
+        .tab-button.active { color: #007bff; border-bottom: 2px solid #007bff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .student-card { display: flex; align-items: center; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .student-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 1rem; }
+        .student-details h4 { margin: 0 0 5px 0; }
+        .student-details p { margin: 0; color: #6c757d; font-size: 0.9em; }
+        .meal-icons { display: flex; gap: 0.5rem; margin-top: 5px; font-size: 0.8em; }
+        .meal-icons span { background: #e9ecef; padding: 3px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>Admin - Live Meal Report</h1>
+        <a href="admin_dashboard.html" class="back-dashboard-btn">← Back to Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        <div class="dashboard-header">
+            <div class="date-picker-group">
+                <label for="datePicker">Select Date:</label>
+                <input type="date" id="datePicker">
+            </div>
+        </div>
+        <div id="countsGrid" class="counts-grid"></div>
+        <div class="tabs" id="tabsContainer"></div>
+        <div id="confirmedStudents" class="tab-content active"></div>
+        <div id="notConfirmedStudents" class="tab-content"></div>
+        <div id="onLeaveStudents" class="tab-content"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const datePicker = document.getElementById('datePicker');
+            const countsGrid = document.getElementById('countsGrid');
+            const tabsContainer = document.getElementById('tabsContainer');
+            const confirmedContainer = document.getElementById('confirmedStudents');
+            const notConfirmedContainer = document.getElementById('notConfirmedStudents');
+            const onLeaveContainer = document.getElementById('onLeaveStudents');
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            datePicker.value = tomorrow.toISOString().split('T')[0];
+
+            async function fetchMealData(date) {
+                try {
+                    const response = await fetch(`/api/chief/meal-counts/${date}?cache=${new Date().getTime()}`);
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.message);
+
+                    countsGrid.innerHTML = `
+                        <div class="count-card"><h3>☀️ Breakfast</h3><p class="count-number">${data.counts.breakfast}</p></div>
+                        <div class="count-card"><h3><i class="fas fa-sun"></i> Lunch</h3><p class="count-number">${data.counts.lunch}</p></div>
+                        <div class="count-card"><h3>🍪 Snacks</h3><p class="count-number">${data.counts.snacks}</p></div>
+                        <div class="count-card"><h3>🌙 Dinner</h3><p class="count-number">${data.counts.dinner}</p><div class="sub-counts-container"><span class="sub-count-item">Veg: <strong class="veg">${data.counts.veg}</strong></span><span class="sub-count-item">Non-Veg: <strong class="non-veg">${data.counts.nonVeg}</strong></span></div></div>
+                    `;
+
+                    tabsContainer.innerHTML = `<button class="tab-button active" data-tab="confirmedStudents">Confirmed (${data.confirmedStudents.length})</button><button class="tab-button" data-tab="notConfirmedStudents">Not Confirmed (${data.notConfirmedStudents.length})</button><button class="tab-button" data-tab="onLeaveStudents">On Leave (${data.onLeaveStudents.length})</button>`;
+                    
+                    renderStudentList(data.confirmedStudents, confirmedContainer, true);
+                    renderStudentList(data.notConfirmedStudents, notConfirmedContainer, false);
+                    renderStudentList(data.onLeaveStudents, onLeaveContainer, false);
+                } catch (error) {
+                    countsGrid.innerHTML = `<p style="color:red; grid-column: 1 / -1;">Error: ${error.message}</p>`;
+                }
+            }
+
+            // --- THIS IS THE COMPLETE, CORRECT FUNCTION ---
+            function renderStudentList(students, container, showMeals) {
+                if (students.length === 0) {
+                    container.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">No students in this category.</p>`;
+                    return;
+                }
+                container.innerHTML = '';
+                students.forEach(student => {
+                    const photoPath = student.photo ? student.photo.replace(/\\/g, '/') : '';
+                    const photoSrc = student.photo ? `/${photoPath}` : 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo';
+                    
+                    let mealHtml = '';
+                    if (showMeals) {
+                        const dinnerChoiceHtml = student.dinnerChoice ? `<span class="${student.dinnerChoice.toLowerCase()}">${student.dinnerChoice}</span>` : '';
+                        mealHtml = `
+                            <div class="meal-icons">
+                                ${student.meals.includes('Breakfast') ? '<span>☀️</span>' : ''}
+                                ${student.meals.includes('Lunch') ? '<span>နေ့</span>' : ''}
+                                ${student.meals.includes('Evening Snacks') ? '<span>🍪</span>' : ''}
+                                ${student.meals.includes('Dinner') ? `<span>🌙 ${dinnerChoiceHtml}</span>` : ''}
+                            </div>
+                        `;
+                    }
+                    const card = `
+                        <div class="student-card">
+                            <img src="${photoSrc}" alt="Photo" class="student-photo" onerror="this.src='https://placehold.co/100x100/EFEFEF/AAAAAA&text=No+Photo'">
+                            <div class="student-details">
+                                <h4>${student.name}</h4>
+                                <p>${student.sspId}</p>
+                                ${mealHtml}
+                            </div>
+                        </div>`;
+                    container.innerHTML += card;
+                });
+            }
+
+            datePicker.addEventListener('change', () => fetchMealData(datePicker.value));
+            
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(e.target.dataset.tab).classList.add('active');
+                }
+            });
+
+            fetchMealData(datePicker.value);
+        });
+    </script>
+
+</body>
+</html>
+

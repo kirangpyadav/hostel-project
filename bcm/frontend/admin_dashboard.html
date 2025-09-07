@@ -391,6 +391,12 @@
 .dashboard-card.kits h3 { border-color: #20c997; }
 .dashboard-card.kits .card-button { background-color: #20c997; }
 .dashboard-card.kits .card-button:hover { background-color: #1aab80; }
+/* Add these styles inside your <style> tag */
+.dashboard-card.meals .card-icon,
+.dashboard-card.meals h3 { color: #28a745; } /* Green color */
+.dashboard-card.meals h3 { border-color: #28a745; }
+.dashboard-card.meals .card-button { background-color: #28a745; }
+.dashboard-card.meals .card-button:hover { background-color: #218838; }
     </style>
 </head>
 <body>
@@ -439,6 +445,13 @@
   <h3>Kit Distribution</h3>
   <p>Create and manage monthly kit distribution cycles for students.</p>
   <button class="card-button" onclick="window.location.href='admin_kit_dashboard.html'">Manage Kits</button>
+</div>
+<!-- Add this card to your admin_dashboard.html -->
+<div class="dashboard-card meals">
+    <i class="fas fa-chart-pie card-icon"></i>
+    <h3>Daily Meal Report</h3>
+    <p>View a live dashboard of student meal confirmations and attendance.</p>
+    <button class="card-button" onclick="window.location.href='admin_meal_counts.html'">View Report</button>
 </div>
 
   <div class="dashboard-card announcements">
