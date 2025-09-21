@@ -8,30 +8,28 @@ const inventoryItemSchema = new mongoose.Schema({
         trim: true
     },
     unit: {
-        type: String, // e.g., 'kg', 'liters', 'packets', 'units'
+        type: String,
         required: true,
         trim: true
     },
     category: {
-        type: String, // e.g., 'Grains', 'Oils', 'Vegetables', 'Spices'
+        type: String,
         required: true,
         trim: true
     },
-    category: {
-    type: String, 
-    required: true,
-    trim: true
-},
-itemImage: {
-    type: String,
-    required: true
-},
+    itemImage: {
+        type: String,
+        required: true
+    },
     currentStock: {
         type: Number,
         required: true,
         default: 0,
-        min: 0 // Stock cannot be negative
+        min: 0
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('InventoryItem', inventoryItemSchema);
+// --- THIS IS THE FIX ---
+// This line checks if the model already exists before trying to create it.
+// This prevents the "OverwriteModelError" completely.
+module.exports = mongoose.models.InventoryItem || mongoose.model('InventoryItem', inventoryItemSchema);

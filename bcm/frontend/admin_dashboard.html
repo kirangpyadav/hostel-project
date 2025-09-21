@@ -397,6 +397,12 @@
 .dashboard-card.meals h3 { border-color: #28a745; }
 .dashboard-card.meals .card-button { background-color: #28a745; }
 .dashboard-card.meals .card-button:hover { background-color: #218838; }
+/* Add these styles inside your <style> tag */
+.dashboard-card.requests .card-icon,
+.dashboard-card.requests h3 { color: #fd7e14; } /* Orange color */
+.dashboard-card.requests h3 { border-color: #fd7e14; }
+.dashboard-card.requests .card-button { background-color: #fd7e14; }
+.dashboard-card.requests .card-button:hover { background-color: #e67e22; }
     </style>
 </head>
 <body>
@@ -430,6 +436,13 @@
     <p>Handle inventory and manage the reservation and distribution of food rations.</p>
     <button class="card-button" onclick="window.location.href='manage_ration/ration-dashboard.html'">Manage Rations</button>
   </div>
+
+<div class="dashboard-card requests">
+    <i class="fas fa-clipboard-check card-icon"></i>
+    <h3>Ration Requests</h3>
+    <p>Review, approve, or reject ration requests submitted by the kitchen chief.</p>
+    <button class="card-button" onclick="window.location.href='admin_ration_requests.html'">Manage Requests</button>
+</div>
   <!-- Add this new card inside the 'mainDashboard' element -->
 
 <div class="dashboard-card leaves">

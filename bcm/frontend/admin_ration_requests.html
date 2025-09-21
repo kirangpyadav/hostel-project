@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Approve Ration Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f6f9; }
+        .top-header { background-color: #343a40; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .top-header h1 { margin: 0; font-size: 1.5em; }
+        .back-dashboard-btn { background-color: #007bff; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 5px; font-weight: 600; text-decoration: none; }
+        .main-container { padding: 2rem; max-width: 1200px; margin: 2rem auto; }
+        .section-title { font-size: 1.8em; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid #007bff; }
+        
+        .requests-list { display: flex; flex-direction: column; gap: 1.5rem; }
+        .request-card { background: #fff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .card-header { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+        .chief-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #ffc107; }
+        .chief-info h3 { margin: 0; font-size: 1.2em; }
+        .chief-info p { margin: 2px 0 0 0; color: #6c757d; font-size: 0.9em; }
+        .card-body { padding: 1.5rem; }
+        .item-list { list-style-type: none; padding: 0; margin: 0; }
+        .item-list li { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f1f1f1; }
+        .item-list li:last-child { border-bottom: none; }
+        .stock-level { font-size: 0.9em; }
+        .stock-ok { color: #28a745; }
+        .stock-low { color: #dc3545; font-weight: bold; }
+        .card-actions { display: flex; gap: 1rem; padding: 1rem 1.5rem; background-color: #f8f9fa; border-top: 1px solid #dee2e6; }
+        .action-btn { flex-grow: 1; border: none; padding: 0.8rem; font-size: 1em; font-weight: 600; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; }
+        .approve-btn { background-color: #28a745; color: white; }
+        .approve-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .reject-btn { background-color: #dc3545; color: white; }
+        .placeholder { text-align: center; padding: 3rem; color: #777; font-size: 1.1em; background: #fff; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>Approve Ration Requests</h1>
+        <a href="admin_dashboard.html" class="back-dashboard-btn">← Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        <h2 class="section-title">Pending Requests</h2>
+        <div id="requestsList" class="requests-list">
+            <p class="placeholder">Loading requests...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const requestsList = document.getElementById('requestsList');
+
+            async function fetchPendingRequests() {
+                try {
+                    const response = await fetch('/api/admin/ration-requests/pending');
+                    const data = await response.json();
+                    if (!data.success) throw new Error(data.message);
+                    renderRequests(data.requests);
+                } catch (error) {
+                    requestsList.innerHTML = `<p class="placeholder" style="color: red;">Error: ${error.message}</p>`;
+                }
+            }
+
+            function renderRequests(requests) {
+                if (requests.length === 0) {
+                    requestsList.innerHTML = `<p class="placeholder">No pending ration requests found.</p>`;
+                    return;
+                }
+                requestsList.innerHTML = '';
+                requests.forEach(req => {
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+                    card.id = `request-${req._id}`;
+
+                    let itemsHtml = '<ul class="item-list">';
+                    let canApprove = true;
+                    req.items.forEach(itemObj => {
+                        const stockOk = itemObj.item.currentStock >= itemObj.quantity;
+                        if (!stockOk) canApprove = false;
+                        const stockClass = stockOk ? 'stock-ok' : 'stock-low';
+                        itemsHtml += `
+                            <li>
+                                <span>${itemObj.item.itemName} - <strong>${itemObj.quantity} ${itemObj.unit}</strong></span>
+                                <span class="stock-level ${stockClass}">(In Stock: ${itemObj.item.currentStock} ${itemObj.unit})</span>
+                            </li>
+                        `;
+                    });
+                    itemsHtml += '</ul>';
+
+                    const photoSrc = req.requestedBy.photo ? `/uploads/${req.requestedBy.photo}` : 'https://placehold.co/100x100';
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <img src="${photoSrc}" alt="Chief Photo" class="chief-photo">
+                            <div class="chief-info">
+                                <h3>${req.requestedBy.name}</h3>
+                                <p>Requested on: ${new Date(req.createdAt).toLocaleDateString('en-GB')}</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Purpose:</strong> ${req.preparationFor}</p>
+                            ${itemsHtml}
+                        </div>
+                        <div class="card-actions">
+                            <button class="action-btn approve-btn" data-reqid="${req._id}" ${!canApprove ? 'disabled' : ''}>${canApprove ? 'Approve' : 'Insufficient Stock'}</button>
+                            <button class="action-btn reject-btn" data-reqid="${req._id}">Reject</button>
+                        </div>
+                    `;
+                    requestsList.appendChild(card);
+                });
+            }
+            
+            requestsList.addEventListener('click', async (e) => {
+                const target = e.target;
+                const requestId = target.dataset.reqid;
+                if (!requestId) return;
+
+                const action = target.classList.contains('approve-btn') ? 'approve' : 'reject';
+
+                if (confirm(`Are you sure you want to ${action} this request?`)) {
+                    try {
+                        const response = await fetch(`/api/admin/ration-requests/${requestId}/${action}`, { method: 'POST' });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.message);
+                        
+                        alert(result.message);
+                        // Remove card from UI for immediate feedback
+                        const cardToRemove = document.getElementById(`request-${requestId}`);
+                        if(cardToRemove) cardToRemove.remove();
+                        
+                        // Check if the list is now empty
+                        if(requestsList.children.length === 0) {
+                            requestsList.innerHTML = `<p class="placeholder">No pending ration requests found.</p>`;
+                        }
+                    } catch (error) {
+                        alert(`Failed to ${action} request: ${error.message}`);
+                    }
+                }
+            });
+
+            fetchPendingRequests();
+        });
+    </script>
+</body>
+</html>

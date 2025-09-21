@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "pdfkit": "^0.17.2",
+    "pdfkit-table": "^0.1.99",
     "twilio": "^5.8.0"
   }
 }

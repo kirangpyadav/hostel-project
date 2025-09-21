@@ -8,6 +8,11 @@ const Student = require('../models/Student');
 const crypto = require('crypto');
 const KitCycle = require('../models/KitCycle');
 const KitCollection = require('../models/KitCollection');
+const RationRequest = require('../models/RationRequest');
+const InventoryItem = require('../models/InventoryItem');
+const ChiefUser = require('../models/ChiefUser');
+const KitchenChief = require('../models/kitchenChief');
+const RationTransaction = require('../models/RationTransaction');
 
 // Initialize Twilio client from environment variables
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -323,6 +328,140 @@ router.post('/kit-cycles/:cycleId/reopen', async (req, res) => {
         res.status(200).json({ success: true, message: 'Cycle has been successfully re-opened.' });
     } catch (error) {
         console.error("Error re-opening kit cycle:", error);
+        res.status(500).json({ success: false, message: 'Server error.' });
+    }
+});
+
+
+
+
+
+
+
+
+
+// ROUTE: Get all PENDING ration requests
+router.get('/ration-requests/pending', async (req, res) => {
+    try {
+        const requests = await RationRequest.find({ status: 'Pending' })
+            .populate({ 
+                path: 'requestedBy', 
+                model: 'ChiefUser',
+                select: 'name photo', // Select fields from ChiefUser
+                populate: { // Nested populate
+                    path: 'chiefInfo',
+                    model: 'KitchenChief',
+                    select: 'name photo' // Get the photo and name from the linked KitchenChief
+                }
+            })
+            .populate({ path: 'items.item', model: 'InventoryItem', select: 'itemName currentStock unit' })
+            .sort({ createdAt: 1 });
+
+        // We need to manually construct the chief's info from the nested populate
+        const formattedRequests = requests.map(req => {
+            const chiefInfo = req.requestedBy.chiefInfo;
+            return {
+                ...req.toObject(),
+                requestedBy: {
+                    _id: req.requestedBy._id,
+                    name: chiefInfo.name,
+                    photo: chiefInfo.photo
+                }
+            };
+        });
+
+        res.status(200).json({ success: true, requests: formattedRequests });
+    } catch (error) {
+        console.error("Error fetching pending ration requests:", error);
+        res.status(500).json({ success: false, message: 'Server error.' });
+    }
+});
+
+
+
+// ROUTE: Approve a ration request
+router.post('/ration-requests/:requestId/approve', async (req, res) => {
+    const { requestId } = req.params;
+    try {
+        const request = await RationRequest.findById(requestId)
+            .populate({
+                path: 'requestedBy',
+                model: 'ChiefUser',
+                populate: {
+                    path: 'chiefInfo',
+                    model: 'KitchenChief',
+                    select: 'name'
+                }
+            })
+            .populate('items.item');
+
+        // ===================================================================
+        // --- ADD THIS DEBUGGING CODE ---
+        // ===================================================================
+        console.log("\n--- DEBUGGING RATION APPROVAL ---");
+        console.log("Full Request Object:", JSON.stringify(request, null, 2)); // See the full structure
+        console.log("Value for 'preparationFor':", request.preparationFor);
+        console.log("Value for 'requestedBy.chiefInfo.name':", request.requestedBy?.chiefInfo?.name);
+        console.log("---------------------------------\n");
+        // ===================================================================
+        // --- END OF DEBUGGING CODE ---
+        // ===================================================================
+        
+        if (!request) {
+            return res.status(404).json({ success: false, message: 'Request not found.' });
+        }
+        if (request.status !== 'Pending') {
+            return res.status(400).json({ success: false, message: 'This request has already been processed.' });
+        }
+
+        // Final stock check
+        for (const reqItem of request.items) {
+            if (reqItem.item.currentStock < reqItem.quantity) {
+                throw new Error(`Cannot approve: Insufficient stock for ${reqItem.item.itemName}.`);
+            }
+        }
+
+        // Deduct from stock
+        for (const reqItem of request.items) {
+            await InventoryItem.findByIdAndUpdate(reqItem.item._id, {
+                $inc: { currentStock: -reqItem.quantity }
+            });
+        }
+        
+        // Create the transaction history record
+        const transactionRecords = request.items.map(reqItem => ({
+            item: reqItem.item._id,
+            type: 'OUT',
+            quantity: reqItem.quantity,
+            purpose: request.preparationFor || 'Admin Approved Request',
+            chief: request.requestedBy?.chiefInfo?.name || 'N/A' // Using optional chaining for safety
+        }));
+
+        await RationTransaction.insertMany(transactionRecords);
+
+        // Update request status
+        request.status = 'Approved';
+        await request.save();
+
+        res.status(200).json({ success: true, message: 'Request approved, inventory and history updated.' });
+    } catch (error) {
+        console.error("Error approving ration request:", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// ROUTE: Reject a ration request
+router.post('/ration-requests/:requestId/reject', async (req, res) => {
+    const { requestId } = req.params;
+    try {
+        const request = await RationRequest.findByIdAndUpdate(requestId, { status: 'Rejected' });
+        if (!request) return res.status(404).json({ success: false, message: 'Request not found.' });
+
+        // Optional: Send SMS to chief
+        // ...
+
+        res.status(200).json({ success: true, message: 'Request has been rejected.' });
+    } catch (error) {
         res.status(500).json({ success: false, message: 'Server error.' });
     }
 });

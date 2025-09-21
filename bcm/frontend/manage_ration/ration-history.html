@@ -203,11 +203,13 @@
             }
 
             function updateSummary(transactions) {
-                const totalIn = transactions.filter(t => t.type === 'IN').reduce((sum, t) => sum + t.quantity, 0);
-                const totalOut = transactions.filter(t => t.type === 'OUT').reduce((sum, t) => sum + t.quantity, 0);
-                totalInEl.textContent = totalIn.toFixed(2);
-                totalOutEl.textContent = totalOut.toFixed(2);
-            }
+        // By adding Number(), we ensure correct mathematical addition
+        const totalIn = transactions.filter(t => t.type === 'IN').reduce((sum, t) => sum + Number(t.quantity), 0);
+        const totalOut = transactions.filter(t => t.type === 'OUT').reduce((sum, t) => sum + Number(t.quantity), 0);
+        
+        totalInEl.textContent = totalIn.toFixed(2);
+        totalOutEl.textContent = totalOut.toFixed(2);
+    }
             
             function applyFilters() {
                 const startDate = startDateInput.value ? new Date(startDateInput.value).getTime() : 0;
